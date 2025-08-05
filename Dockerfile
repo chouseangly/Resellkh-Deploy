@@ -22,8 +22,6 @@ COPY . .
 ARG NEXTAUTH_URL
 ENV NEXTAUTH_URL=${NEXTAUTH_URL} 
 
-# This is the line where the fix is applied.
-# The previous Dockerfile had a syntax error here.
 # This runs the Next.js build and handles the missing-suspense error
 RUN npm run build
 
