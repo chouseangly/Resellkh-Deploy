@@ -69,7 +69,7 @@ export default function AuthNavbar() {
           setUser({
             id: profileData.userId,
             name: `${profileData.firstName || ""} ${profileData.lastName || ""}`,
-            avatar: profileData.profileImage || DEFAULT_AVATAR_URL,
+            avatar: profileData.profileImage,
           });
           
           localStorage.setItem("token", token);
@@ -305,7 +305,7 @@ export default function AuthNavbar() {
                 >
                   <div className="w-9 h-9 rounded-full border-2 border-gray-200 hover:border-orange-300 transition-colors bg-gray-100 overflow-hidden flex-shrink-0">
                     <Image
-                      src={user.avatar}
+                      src={user.avatar || DEFAULT_AVATAR_URL}
                       alt="User Avatar"
                       width={36}
                       height={36}

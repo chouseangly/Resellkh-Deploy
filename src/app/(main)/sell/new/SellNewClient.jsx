@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -14,7 +14,9 @@ import { toast } from "react-hot-toast";
 import { encryptId } from "@/utils/encryption";
 import axios from "axios";
 import { getUploadedFiles } from "@/utils/fileStore";
+// --- ⭐️ 1. IMPORT THE EVENT SERVICE ---
 import { eventService } from "@/components/services/even.service";
+
 
 const staticCategories = [
   { id: 1, name: "Accessories" },
@@ -29,7 +31,7 @@ const staticCategories = [
   { id: 10, name: "Other" },
 ];
 
-export default function SellNewClient() {
+export const SellNewClient = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const draftId = searchParams.get("draftId");
@@ -53,8 +55,7 @@ export default function SellNewClient() {
   const [navigationTarget, setNavigationTarget] = useState(null);
   const isNavigatingRef = useRef(false);
   const [userDrafts, setUserDrafts] = useState([]);
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   useEffect(() => {
     if (!draftId) {
       const initialFiles = getUploadedFiles();
@@ -73,7 +74,7 @@ export default function SellNewClient() {
   useEffect(() => {
     if (!draftId || !session?.accessToken) return;
 
-    const token = session.accessToken;
+    const token = localStorage.getItem("token");
     if (!token) {
       toast.error("Missing authentication token. Please login again.");
       router.push("/login");
@@ -142,7 +143,7 @@ export default function SellNewClient() {
     setIsLoading(true);
 
     try {
-      const token = session?.accessToken;
+      const token = session?.accessToken || localStorage.getItem("token");
       if (!token) {
         toast.error("You must be logged in to list an item.");
         setIsLoading(false);
@@ -171,19 +172,19 @@ export default function SellNewClient() {
         files,
       };
 
-      const formData = new FormData();
-      
-      const productDetails = { ...productData };
-      delete productDetails.files;
-      formData.append('product', JSON.stringify(productDetails));
-
-      productData.files.forEach((file) => {
-        if (file instanceof File) {
-          formData.append("files", file);
-        }
-      });
-      
       if (draftId) {
+        const formData = new FormData();
+        Object.keys(productData).forEach((key) => {
+          if (key !== "files") {
+            formData.append(key, productData[key]);
+          }
+        });
+        productData.files.forEach((file) => {
+          if (file instanceof File) {
+            formData.append("files", file);
+          }
+        });
+
         await axios.put(
           `${API_BASE_URL}/products/update-draft/${draftId}`,
           formData,
@@ -196,10 +197,12 @@ export default function SellNewClient() {
         );
         toast.success("Item published successfully!");
       } else {
-        await postProduct(formData); // Assuming postProduct is adapted for FormData
+        await postProduct(productData);
         toast.success("Item listed successfully!");
       }
 
+      // --- ⭐️ 2. DISPATCH EVENT ON SUCCESS ---
+      // This tells other components to refresh their data.
       eventService.dispatch('productAdded');
 
       const encryptedId = encodeURIComponent(encryptId(session.user.id));
@@ -215,7 +218,10 @@ export default function SellNewClient() {
       setIsLoading(false);
     }
   };
-
+  
+  // The rest of your functions (handleSaveDraft, etc.) and JSX remain unchanged.
+  // I am including them below for completeness.
+  
   useEffect(() => {
     const fetchAllUserDrafts = async () => {
       if (
@@ -307,7 +313,7 @@ export default function SellNewClient() {
   }, [showPopup]);
 
   const handleSaveDraft = async () => {
-    const token = session?.accessToken;
+    const token = session?.accessToken || localStorage.getItem("token");
     if (!token) {
       toast.error("You must be logged in to save a draft.");
       return;
@@ -318,34 +324,35 @@ export default function SellNewClient() {
         (cat) => cat.name === category
       );
       const mainCategoryId = selectedCategory ? selectedCategory.id : 0;
-      
+      const params = new URLSearchParams();
+      params.append("productName", title || "");
+      params.append(
+        "userId",
+        String(
+          session?.user?.id || JSON.parse(localStorage.getItem("cachedUser")).id
+        )
+      );
+      params.append("mainCategoryId", String(mainCategoryId || ""));
+      params.append("productPrice", String(price || ""));
+      params.append("discountPercent", String(discount || ""));
+      params.append("description", description || "");
+      params.append("location", location || "");
+      params.append("latitude", String(latitude || ""));
+      params.append("longitude", String(longitude || ""));
+      params.append("condition", condition || "");
+      params.append("telegramUrl", telegram || "");
       const formData = new FormData();
-      const productDetails = {
-        productName: title || "",
-        userId: session?.user?.id,
-        mainCategoryId: mainCategoryId || "",
-        productPrice: price || "",
-        discountPercent: discount || "",
-        description: description || "",
-        location: location || "",
-        latitude: latitude || "",
-        longitude: longitude || "",
-        condition: condition || "",
-        telegramUrl: telegram || "",
-      };
-      formData.append('product', JSON.stringify(productDetails));
-
       files.forEach((file) => {
         if (file instanceof File) {
           formData.append("files", file);
         }
       });
-      
       let response;
-      const baseUrl = `${API_BASE_URL}/products/`;
+      const baseUrl =
+        `${API_BASE_URL}/products/`;
       if (draftId) {
         response = await axios.put(
-          `${baseUrl}drafts/${draftId}`,
+          `${baseUrl}drafts/${draftId}?${params.toString()}`,
           formData,
           {
             headers: {
@@ -356,7 +363,7 @@ export default function SellNewClient() {
         );
       } else {
         response = await axios.post(
-          `${baseUrl}save-draft`,
+          `${baseUrl}save-draft?${params.toString()}`,
           formData,
           {
             headers: {
@@ -370,7 +377,7 @@ export default function SellNewClient() {
         toast.success("Draft saved successfully!");
         localStorage.removeItem("unsavedDraft");
         if (!draftId && response.data?.payload?.draftId) {
-          router.replace(`/sell/new?draftId=${response.data.payload.draftId}`);
+          router.replace(`/sell?draftId=${response.data.payload.draftId}`);
         }
         if (session?.user?.id) {
           const userId = session.user.id;
@@ -519,3 +526,5 @@ export default function SellNewClient() {
     </div>
   );
 };
+
+export default SellNewClient;

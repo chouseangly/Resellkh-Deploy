@@ -1,3 +1,5 @@
+
+
 'use client';
 
 import Link from 'next/link';
@@ -6,15 +8,16 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { FiX } from 'react-icons/fi';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-export default function DraftCard({ draft, onDelete, token }) { // Accept token as a prop
+
+export default function DraftCard({ draft, onDelete, token }) {
   const router = useRouter();
 
-  const imageUrl = draft.fileUrls?.[0] || '/placeholder.png';
+  const imageUrl = draft.fileUrls?.[0] || 'https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png'; 
   const draftId = draft.draftId ?? null;
   const userId = draft.userId ?? null;
 
   const handleImageError = (e) => {
-    e.target.src = '/placeholder.png';
+    e.target.src = 'https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png'; 
     console.error('Failed to load image:', imageUrl, e);
   };
 
@@ -22,7 +25,6 @@ export default function DraftCard({ draft, onDelete, token }) { // Accept token 
     e.preventDefault();
     if (!draftId || !userId) return;
 
-    // Check for token before making the request
     if (!token) {
         toast.error("Authentication token is missing. Please log in again.");
         return;
@@ -37,7 +39,6 @@ export default function DraftCard({ draft, onDelete, token }) { // Accept token 
         {
           method: 'DELETE',
           headers: {
-            // Include the Authorization header with the token
             'Authorization': `Bearer ${token}`,
           },
         }
