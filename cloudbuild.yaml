@@ -1,0 +1,34 @@
+steps:
+  # Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg'
+      - 'NEXTAUTH_URL=https://resellkh-deploy-1063848356446.europe-west1.run.app' # This is the crucial part
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/resellkh-deploy:$COMMIT_SHA'
+      - '.'
+
+  # Push the Docker image to Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/resellkh-deploy:$COMMIT_SHA']
+
+# Deploy to Cloud Run
+  - name: 'gcr.io/google-cloud-sdk/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'resellkh-deploy' # Your service name
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/resellkh-deploy:$COMMIT_SHA'
+      - '--region'
+      - 'europe-west1' # The region of your service
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--set-env-vars'
+      - 'DATABASE_URL=${_DATABASE_URL},NEXTAUTH_SECRET=${_NEXTAUTH_SECRET},GOOGLE_CLIENT_ID=${_GOOGLE_CLIENT_ID},GOOGLE_CLIENT_SECRET=${_GOOGLE_CLIENT_SECRET},NEXT_PUBLIC_API_URL=${_NEXT_PUBLIC_API_URL},NEXTAUTH_URL=https://resellkh-deploy-1063848356446.europe-west1.run.app'
+
+# This tells Cloud Build which image to use for the deployment
+images:
+  - 'gcr.io/$PROJECT_ID/resellkh-deploy:$COMMIT_SHA'
