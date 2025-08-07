@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { setUploadedFiles } from '@/utils/fileStore';
 import { toast } from 'react-hot-toast';
+import Image from 'next/image';
 
 export default function PhotoUploadPrompt() {
   const fileInputRef = useRef(null);
@@ -114,7 +115,7 @@ export default function PhotoUploadPrompt() {
         onChange={(e) => handleFiles(e.target.files)}
       />
       <div className="mb-4">
-        <img src="/images/story set/image.jpg" alt="Upload Icon" className='w-[40px]' />
+        <Image src="/images/story set/image.jpg" alt="Upload Icon" className='w-[40px]' />
       </div>
       <div className="mb-4">
         <span className="px-6 py-2 mt-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition">

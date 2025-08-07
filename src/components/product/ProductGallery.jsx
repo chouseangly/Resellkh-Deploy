@@ -64,7 +64,7 @@ const ProductGallery = ({ product }) => {
   return (
     <div className="flex flex-row gap-3 w-full max-w-full overflow-hidden">
       {/* Thumbnails - vertical layout with hidden scrollbar */}
-      <div className="flex flex-col gap-2 max-h-[300px] sm:max-h-[400px] no-scrollbar">
+     <div className="flex flex-col ps-[1px] pt-[1px] gap-[5px] max-h-[390px] sm:max-h-[550px] no-scrollbar">
         {mediaItems.map((src, index) => {
           const isVideo = getMediaType(src, product.contentTypes?.[index]) === 'video';
 
@@ -75,8 +75,8 @@ const ProductGallery = ({ product }) => {
               aria-current={selectedIndex === index ? 'true' : undefined}
               className={`relative w-[84px] h-[64px] sm:w-[94px] sm:h-[94px] rounded-lg overflow-hidden border transition-all flex-shrink-0 ${
                 selectedIndex === index
-                  ? 'border-orange-500 ring-2 ring-orange-500'
-                  : 'border-gray-200 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500'
+                  ? 'border-orange-500 ring-1 ring-orange-500'
+                  :'border-gray-200 hover:border-gray-300 focus:outline-none focus:ring-1 focus:ring-orange-500'
               }`}
             >
               {isVideo ? (
@@ -127,8 +127,8 @@ const ProductGallery = ({ product }) => {
               className="w-full h-full object-cover"
             />
           ) : (
-            <Link
-              href={`/product/${product.productId}/media/${selectedIndex}`}
+            <div
+             
               className="block w-full h-full relative"
             >
               <Image
@@ -140,7 +140,7 @@ const ProductGallery = ({ product }) => {
                 priority
                 quality={85} // Slightly higher quality for the main image
               />
-            </Link>
+            </div>
           )
         ) : (
           // Placeholder for when there are no images

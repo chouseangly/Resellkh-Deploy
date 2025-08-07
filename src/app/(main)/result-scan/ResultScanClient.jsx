@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import { searchProductsByImage } from '@/components/services/ScanProduct.service';
 import ProductCart from '@/components/domain/ProductCart';
+import Image from 'next/image';
 
 // SVG Icons
 const MagnifyingGlassIcon = () => (
@@ -180,7 +181,7 @@ export default function ResultScanClient() {
             Search any image with Lens
           </h2>
           <div className="flex justify-center">
-            <img
+            <Image
               src={imgSrc}
               alt="Scanned"
               className="w-48 sm:w-60 md:w-72 h-auto rounded-xl border object-contain bg-white"

@@ -34,7 +34,7 @@ export default function AuthNavbar() {
   const isSigningOut = useRef(false);
   const router = useRouter();
   const pathname = usePathname();
-  const DEFAULT_AVATAR_URL = "https://gateway.pinata.cloud/ipfs/QmYkedcDzkvyCZbPtzmztQZ7uANVYFiqBXTJbERsJyfcQm";
+  const DEFAULT_AVATAR_URL = "/images/profile/profile.png";
 
 
   const categoryMap = {
@@ -220,7 +220,7 @@ export default function AuthNavbar() {
           <div className="flex items-center">
             <Link href="/">
               <div className="flex items-center space-x-2 cursor-pointer">
-                <img
+                <Image
                   src="/images/auth/logo1.png"
                   alt="ResellKH Logo"
                   className="h-12 w-auto"

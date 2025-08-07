@@ -124,7 +124,7 @@ export default function Reviews({ sellerId }) {
         }),
         rating: result.payload.score || 0,
         comment: result.payload.comment || "",
-        userAvatar: result.payload.reviewerAvatar || "https://gateway.pinata.cloud/ipfs/QmYkedcDzkvyCZbPtzmztQZ7uANVYFiqBXTJbERsJyfcQm",
+        userAvatar: result.payload.reviewerAvatar || "/images/profile/profile.png",
       };
 
       setReviews((prev) => [newReview, ...prev]);
@@ -180,7 +180,7 @@ export default function Reviews({ sellerId }) {
               <div key={index} className="flex space-x-4 pb-6">
                 <div className="w-12 h-12 bg-gray-200 rounded-full overflow-hidden flex-shrink-0">
                   <Image
-                    src={review.userAvatar || "https://gateway.pinata.cloud/ipfs/QmYkedcDzkvyCZbPtzmztQZ7uANVYFiqBXTJbERsJyfcQm"}
+                    src={review.userAvatar}
                     alt={review.name}
                     width={48}
                     height={48}

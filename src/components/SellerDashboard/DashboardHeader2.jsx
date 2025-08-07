@@ -48,7 +48,7 @@ const DashboardHeader = ({ userName, userRole, userAvatar, userId }) => {
               Edit Business Info
             </button>
             <div className="flex items-center space-x-3">
-              <img
+              <Image
                 src={userAvatar}
                 alt="User Avatar"
                 className="w-8 h-8 object-cover rounded-full"

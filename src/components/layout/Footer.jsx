@@ -24,7 +24,7 @@ export default function Footer() {
         <div className="col-span-2 md:col-span-1">
           <div className="flex items-center gap-2 mb-3 sm:mb-4">
             <Link href="/" className="focus:outline-none rounded">
-              <img 
+              <Image
                 src="/images/auth/logo1.png" 
                 alt="ResellKH Logo" 
                 width={120}

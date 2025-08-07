@@ -20,7 +20,7 @@ export default function GuestNavbar() {
         {/* Top Navigation */}
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <img
+          <Image
             src="/logo.png"
             alt="ResellKH Logo"
             onClick={() => router.push('/')}

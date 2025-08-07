@@ -71,7 +71,7 @@ const PaymentRecordCard = ({ payment, onViewReceipt }) => {
           </div>
           <div className="flex items-center gap-4">
             <div className="relative">
-              <img
+              <Image
                 src={payment.product.imageUrl}
                 alt={payment.product.name}
                 className="w-16 h-16 object-cover rounded-xl shadow-md"

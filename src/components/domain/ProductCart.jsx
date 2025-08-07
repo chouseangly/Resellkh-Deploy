@@ -133,7 +133,7 @@ export default function ProductCart({
                     </div>
                 )}
                 <Image
-                    src={imageUrl}
+                    src={imageUrl || "/images/product/product.png"}
                     alt={title}
                     fill
                     // The 'sizes' attribute is optimized for the responsive grid layout.

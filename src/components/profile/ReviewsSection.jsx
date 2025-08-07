@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { FaStar } from "react-icons/fa";
+import Image from "next/image";
 
 const ReviewsSection = ({ setActiveTab, sellerId }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -189,7 +190,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
         {reviews.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-6 text-center">
-            <img
+            <Image
               src="/images/story set/amico.jpg"
               alt="No reviews"
               className="w-[300px] h-auto mb-4"
@@ -213,7 +214,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
                 <div key={review.ratingId} className="flex space-x-4 pb-4">
                   <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
                     {review.reviewerAvatar ? (
-                      <img
+                      <Image
                         src={review.reviewerAvatar}
                         alt={review.reviewerName || "Anonymous"}
                         className="w-full h-full object-cover"

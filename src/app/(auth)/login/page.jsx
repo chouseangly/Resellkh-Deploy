@@ -136,7 +136,7 @@ export default function LoginForm() {
 
         <div className="w-full max-w-md mx-auto">
           <div className="flex justify-center mb-6">
-            <img src="/images/auth/logo.jpg" alt="logo" className="w-[130px]" />
+            <Image src="/images/auth/logo.jpg" alt="logo" className="w-[130px]" />
           </div>
 
           {apiError && (
@@ -205,7 +205,7 @@ export default function LoginForm() {
               onClick={handleGoogleLogin}
               className="w-full flex items-center justify-center gap-3 border border-gray-900 p-3 rounded-full hover:bg-gray-50 transition"
             >
-              <img src="/google-20.png" alt="Google" className="w-5 h-5" />
+              <Image src="/google-20.png" alt="Google" className="w-5 h-5" />
               <span className="text-sm font-medium text-gray-700">
                 Continue with Google
               </span>

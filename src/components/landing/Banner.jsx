@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function Banner() {
   return (
-    <section className="w-full py-[80] ">
+    <section className="w-full py-[70] ">
       <div className="max-w-auto mx-auto flex flex-col md:flex-row items-start justify-between gap-[45] ">
         <div className="w-full md:w-1/2 lg:w-[70%] text-center md:text-left">
           <h1 className="text-[27px] lg:text-[35px] md:text-[24px] font-bold text-gray-900 leading-tight mb-3">
@@ -12,7 +12,7 @@ export default function Banner() {
             one resold product at a time.
           </h2>
 
-          <p className="text-[16px] lg:text-[16px] md:text-[13px] text-gray-600 leading-relaxed max-w-full mx-auto md:mx-0">
+          <p className="text-[16px] lg:text-[16px] md:text-[13px] sm:texy-[10px] text-gray-600 leading-relaxed max-w-full mx-auto md:mx-0">
             Cambodia’s trusted online marketplace where buying and selling is
             fast, easy, and secure. Whether you're looking to declutter your
             home, start a side hustle, or find great deals on quality new and

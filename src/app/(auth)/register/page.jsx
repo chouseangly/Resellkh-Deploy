@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession, signIn } from "next-auth/react";
 import { toast, Toaster } from "react-hot-toast";
 import { HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
+import Image from "next/image";
 import Input from "@/components/ui/Input";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -117,7 +118,7 @@ export default function Register() {
 
       <div className="w-full lg:w-1/2 max-w-md py-8 space-y-4">
         <div className="flex justify-center mb-2">
-          <img src="/images/auth/logo.jpg" alt="logo" className="w-[130px]" />
+          <Image src="/images/auth/logo.jpg" alt="logo" className="w-[130px]" />
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -235,7 +236,7 @@ export default function Register() {
           onClick={handleGoogleLogin}
           className="w-full flex items-center justify-center gap-3 border border-gray-900 p-3 rounded-full hover:bg-gray-50 transition"
         >
-          <img src="/google-20.png" alt="Google" className="w-5 h-5" />
+          <Image src="/google-20.png" alt="Google" className="w-5 h-5" />
           <span className="text-sm font-medium text-gray-700">Continue with Google</span>
         </button>
 
@@ -248,7 +249,7 @@ export default function Register() {
       </div>
 
       <div className="hidden lg:flex md:ps-10 justify-center mt-14 lg:mt-0">
-        <img
+        <Image
           src="/images/auth/register.jpg"
           alt="Register Illustration"
           width={450}

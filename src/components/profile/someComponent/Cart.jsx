@@ -115,7 +115,7 @@ export default function Cart({
         )}
 
         <Image
-          src={imageUrl}
+          src={imageUrl || "/images/product/product.png"}
           alt={title}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"

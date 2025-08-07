@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
 import { toast, Toaster } from "react-hot-toast";
 import Input from "@/components/ui/Input";
+import Image from "next/image";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -87,7 +88,7 @@ export default function ResetPasswordClient() {
       <div className="min-h-screen flex flex-col md:flex-row items-center justify-center bg-white px-[150px]">
         {/* Left Image */}
         <div className="hidden md:flex w-1/2 justify-between">
-          <img
+          <Image
             src="/images/auth/create new password.jpg"
             alt="Reset Password"
             className="w-[400px]"
@@ -97,7 +98,7 @@ export default function ResetPasswordClient() {
         {/* Right Form */}
         <div className="w-full md:w-1/2 max-w-md space-y-6">
           <div className="flex justify-center mb-8">
-            <img src="/images/auth/logo.jpg" alt="logo" className="w-[130px]" />
+            <Image src="/images/auth/logo.jpg" alt="logo" className="w-[130px]" />
           </div>
           <div>
             <h2 className="text-xl font-semibold text-left">Create new Password</h2>

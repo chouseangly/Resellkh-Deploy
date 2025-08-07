@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import ProductCart from "@/components/domain/ProductCart";
+import Image from "next/image";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -97,7 +98,7 @@ export default function ResultSearchClient() {
               </div>
             ) : products.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
-                <img src="/images/story set/no listings.jpg" alt="No Results" className="w-[350px] h-auto mb-6" />
+                <Image src="/images/story set/no listings.jpg" alt="No Results" className="w-[350px] h-auto mb-6" />
                 <h2 className="font-semibold text-xl mb-2">No results found for "{query}"</h2>
                 <span className="text-sm text-gray-600">Try checking your spelling or using different keywords.</span>
               </div>

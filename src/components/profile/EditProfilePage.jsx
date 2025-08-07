@@ -115,7 +115,7 @@ export default function EditProfilePage({ sellerId }) {
           });
           setSelectedImage(
             p.profileImage ||
-              "https://gateway.pinata.cloud/ipfs/QmYkedcDzkvyCZbPtzmztQZ7uANVYFiqBXTJbERsJyfcQm"
+              "/images/profile/profile.jpg"
           );
           setSelectedCoverImage(p.coverImage || "/cover.jpg");
         } else {
