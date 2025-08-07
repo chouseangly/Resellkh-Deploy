@@ -24,11 +24,11 @@ export default function Footer() {
         <div className="col-span-2 md:col-span-1">
           <div className="flex items-center gap-2 mb-3 sm:mb-4">
             <Link href="/" className="focus:outline-none rounded">
-              <Image
+               <Image
                 src="/images/auth/logo1.png" 
                 alt="ResellKH Logo" 
-                width={120}
-                height={60}
+                width={120} // Add the width of the image
+                height={60} // Add the height of the image
                 className="w-24 sm:w-28 md:w-32 h-auto object-contain"
               />
             </Link>
