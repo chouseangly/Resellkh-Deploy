@@ -14,7 +14,6 @@ import { toast } from "react-hot-toast";
 import { encryptId } from "@/utils/encryption";
 import axios from "axios";
 import { getUploadedFiles } from "@/utils/fileStore";
-// --- ⭐️ 1. IMPORT THE EVENT SERVICE ---
 import { eventService } from "@/components/services/even.service";
 
 
@@ -174,11 +173,13 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
       if (draftId) {
         const formData = new FormData();
+        // Append all keys except 'files'
         Object.keys(productData).forEach((key) => {
           if (key !== "files") {
             formData.append(key, productData[key]);
           }
         });
+        // Append only new files (File objects)
         productData.files.forEach((file) => {
           if (file instanceof File) {
             formData.append("files", file);
@@ -197,16 +198,16 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
         );
         toast.success("Item published successfully!");
       } else {
+        // Use the corrected postProduct service for new items
         await postProduct(productData);
         toast.success("Item listed successfully!");
       }
-
-      // --- ⭐️ 2. DISPATCH EVENT ON SUCCESS ---
-      // This tells other components to refresh their data.
+      
       eventService.dispatch('productAdded');
 
       const encryptedId = encodeURIComponent(encryptId(session.user.id));
       router.push(`/profile/${encryptedId}`);
+
     } catch (error) {
       console.error("Submit error:", error);
       const errorMessage =
@@ -220,8 +221,8 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   };
   
   // The rest of your functions (handleSaveDraft, etc.) and JSX remain unchanged.
-  // I am including them below for completeness.
-  
+  // No changes are needed below this line.
+
   useEffect(() => {
     const fetchAllUserDrafts = async () => {
       if (
@@ -352,7 +353,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
         `${API_BASE_URL}/products/`;
       if (draftId) {
         response = await axios.put(
-          `${baseUrl}drafts/${draftId}?${params.toString()}`,
+          `${baseUrl}update-draft/${draftId}?${params.toString()}`,
           formData,
           {
             headers: {
