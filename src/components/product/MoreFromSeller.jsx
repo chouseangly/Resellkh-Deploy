@@ -1,9 +1,22 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useRef } from 'react';
+import useSWR from 'swr';
 import ProductCart from '../domain/ProductCart';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+// A generic fetcher function for useSWR
+const fetcher = async (url) => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error('Failed to fetch products');
+  }
+  const data = await response.json();
+  return data.payload || [];
+};
+
 // A skeleton loader component that matches the responsive card layout
 const SkeletonCard = () => (
     <div className="flex-shrink-0 w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5 p-2 snap-start">
@@ -24,41 +37,13 @@ const SkeletonCard = () => (
 
 
 const MoreFromSeller = ({ sellerId }) => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true); // Added loading state
-  const [error, setError] = useState(null); // Added error state
   const scrollRef = useRef(null);
 
-  useEffect(() => {
-    if (!sellerId) {
-        setLoading(false);
-        return;
-    };
-
-    const fetchProducts = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(
-          `${API_BASE_URL}/products/getproductbyuserid/${sellerId}`
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch products');
-        }
-
-        const data = await response.json();
-        setProducts(data.payload || []);
-      } catch (error) {
-        console.error('Error fetching seller products:', error);
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, [sellerId]);
+  // Use SWR for data fetching. The key is an array, so SWR will only fetch if sellerId is truthy.
+  const { data: products, error, isLoading } = useSWR(
+    sellerId ? `${API_BASE_URL}/products/getproductbyuserid/${sellerId}` : null,
+    fetcher
+  );
 
   // This scroll function is now responsive, scrolling by the container's width.
   const scroll = (direction) => {
@@ -80,7 +65,7 @@ const MoreFromSeller = ({ sellerId }) => {
             More from this seller
           </h2>
           {/* Scroll arrows are only shown if there are products to scroll */}
-          {!loading && products.length > 0 && (
+          {!isLoading && products && products.length > 0 && (
             <div className="flex gap-2 self-end sm:self-auto">
                 <button
                     onClick={() => scroll('left')}
@@ -105,7 +90,7 @@ const MoreFromSeller = ({ sellerId }) => {
           ref={scrollRef}
           className="flex overflow-x-auto scroll-smooth snap-x snap-mandatory no-scrollbar -mx-2"
         >
-          {loading ? (
+          {isLoading ? (
             Array.from({ length: 5 }).map((_, index) => <SkeletonCard key={index} />)
           ) : error ? (
             <div className="w-full text-center py-10 text-red-500">
@@ -161,4 +146,3 @@ const MoreFromSeller = ({ sellerId }) => {
 };
 
 export default MoreFromSeller;
- 

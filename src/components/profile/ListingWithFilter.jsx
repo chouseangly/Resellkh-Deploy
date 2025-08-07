@@ -1,6 +1,8 @@
+// src/components/profile/ListingWithFilter.jsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
+import useSWR from 'swr';
 import Cart from "./someComponent/Cart";
 
 const SkeletonCard = () => (
@@ -11,90 +13,84 @@ const SkeletonCard = () => (
     <div className="h-4 bg-gray-300 rounded-full w-1/3" />
   </div>
 );
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-export default function ListingsWithFilter({ userId }) {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+// Fetcher function for useSWR that includes the auth token
+const fetcher = async (url) => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("User is not authenticated.");
+  }
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch products");
+  }
+
+  const data = await response.json();
+  return Array.isArray(data.payload)
+    ? data.payload.map((product) => ({
+        ...product,
+        fileUrls: Array.isArray(product.fileUrls)
+          ? product.fileUrls.map((url) =>
+              url.startsWith("http") ? url : `https://${url}`
+            )
+          : [],
+      }))
+    : [];
+};
+
+
+export default function ListingsWithFilter({ userId }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilter, setShowFilter] = useState(false);
-  const [sortBy, setSortBy] = useState("recent"); // Default sort is now 'recent'
+  const [sortBy, setSortBy] = useState("recent");
   const [condition, setCondition] = useState("");
   const [status, setStatus] = useState("");
 
-  useEffect(() => {
-    async function fetchProducts() {
-      setLoading(true);
-      setError(null);
-      try {
-        const token = localStorage.getItem("token");
-        if (!userId) throw new Error("User ID not provided");
+  // Use SWR for data fetching
+  const { data: products = [], error, isLoading } = useSWR(
+    userId ? `${API_BASE_URL}/products/getproductbyuserid/${userId}` : null,
+    fetcher
+  );
 
-        const response = await fetch(
-          `${API_BASE_URL}/products/getproductbyuserid/${userId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+  // Memoize the filtered and sorted products to avoid re-calculation on every render
+  const filteredProducts = useMemo(() => {
+    let filtered = products.filter((p) => {
+      const matchesSearch =
+        (p.productName &&
+          p.productName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (p.description &&
+          p.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesCondition =
+        !condition ||
+        (p.condition &&
+          p.condition.toLowerCase().trim() === condition.toLowerCase().trim());
+      const matchesStatus =
+        !status ||
+        (p.productStatus &&
+          p.productStatus.toLowerCase() === status.toLowerCase());
 
-        if (!response.ok) throw new Error("Failed to fetch products");
+      return matchesSearch && matchesCondition && matchesStatus;
+    });
 
-        const data = await response.json();
-        const formattedProducts = Array.isArray(data.payload)
-          ? data.payload.map((product) => ({
-              ...product,
-              fileUrls: Array.isArray(product.fileUrls)
-                ? product.fileUrls.map((url) =>
-                    url.startsWith("http") ? url : `https://${url}`
-                  )
-                : [],
-            }))
-          : [];
-
-        setProducts(formattedProducts);
-      } catch (err) {
-        setError(err.message || "Unknown error");
-      } finally {
-        setLoading(false);
-      }
+    if (sortBy === "price-high") {
+      filtered.sort((a, b) => b.productPrice - a.productPrice);
+    } else if (sortBy === "price-low") {
+      filtered.sort((a, b) => a.productPrice - b.productPrice);
+    } else if (sortBy === "recent") {
+      filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
-
-    fetchProducts();
-  }, [userId]);
-
-  // Combined filtering and sorting logic
-  let filteredProducts = products.filter((p) => {
-    const matchesSearch =
-      (p.productName &&
-        p.productName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (p.description &&
-        p.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCondition =
-      !condition ||
-      (p.condition &&
-        p.condition.toLowerCase().trim() === condition.toLowerCase().trim());
-    const matchesStatus =
-      !status ||
-      (p.productStatus &&
-        p.productStatus.toLowerCase() === status.toLowerCase());
-
-    return matchesSearch && matchesCondition && matchesStatus;
-  });
-
-  if (sortBy === "price-high") {
-    filteredProducts.sort((a, b) => b.productPrice - a.productPrice);
-  } else if (sortBy === "price-low") {
-    filteredProducts.sort((a, b) => a.productPrice - b.productPrice);
-  } else if (sortBy === "recent") {
-    // Sort by creation date, newest first. Assumes a 'createdAt' field exists.
-    filteredProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  }
+    return filtered;
+  }, [products, searchTerm, condition, status, sortBy]);
 
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-2 md:p-6">
         <div className="p-4 rounded-2xl border border-gray-200">
@@ -118,7 +114,7 @@ export default function ListingsWithFilter({ userId }) {
 
   if (error) {
     return (
-      <div className="p-4 text-center text-red-500 text-sm">Error: {error}</div>
+      <div className="p-4 text-center text-red-500 text-sm">Error: {error.message}</div>
     );
   }
 

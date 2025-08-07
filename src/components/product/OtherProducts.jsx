@@ -1,36 +1,35 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import useSWR from 'swr';
 import ProductCart from '../domain/ProductCart';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const PRODUCTS_PER_LOAD = 20;
 
+// Generic fetcher function for useSWR
+const fetcher = async (url) => {
+  const res = await fetch(url);
+  if (!res.ok) {
+    const error = new Error('An error occurred while fetching the data.');
+    // Attach extra info to the error object.
+    error.info = await res.json();
+    error.status = res.status;
+    throw error;
+  }
+  const data = await res.json();
+  return data.payload || [];
+};
+
+
 const OtherProducts = () => {
-  const [products, setProducts] = useState([]);
   const [visibleCount, setVisibleCount] = useState(PRODUCTS_PER_LOAD);
-  const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/products`);
-        if (!res.ok) throw new Error('Failed to fetch products');
+  // Use SWR to fetch, cache, and revalidate data
+  const { data: products = [], error, isLoading } = useSWR(`${API_BASE_URL}/products`, fetcher);
 
-        const data = await res.json();
-        setProducts(data.payload || []);
-      } catch (error) {
-        console.error('Fetch error:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
-
-  const handleLoadMore = async () => {
+  const handleLoadMore = () => {
     setLoadingMore(true);
     // Simulate loading time for UX
     setTimeout(() => {
@@ -47,8 +46,10 @@ const OtherProducts = () => {
         Other products you may like
       </h2>
 
-      {loading ? (
+      {isLoading ? (
         <p className="text-gray-500">Loading products...</p>
+      ) : error ? (
+         <p className="text-red-500 text-center">Failed to load products.</p>
       ) : (
         <>
           <div className="grid grid-cols-2 px-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-[26px] justify-items-center">

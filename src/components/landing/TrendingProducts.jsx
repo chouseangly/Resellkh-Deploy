@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import ProductCart from "@/components/domain/ProductCart"; // Assuming this is the responsive version
+import { useRef } from "react";
+import useSWR from 'swr';
+import ProductCart from "@/components/domain/ProductCart";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 // Skeleton placeholder that adapts to the responsive layout
 const SkeletonCard = () => (
     <div className="flex-shrink-0 w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5 p-2">
@@ -22,11 +25,24 @@ const SkeletonCard = () => (
     </div>
 );
 
+// Fetcher function for useSWR
+const fetcher = async (url) => {
+    const res = await fetch(url);
+    if (!res.ok) {
+        const error = new Error('An error occurred while fetching the data.');
+        error.info = await res.json();
+        error.status = res.status;
+        throw error;
+    }
+    const data = await res.json();
+    return data.payload || [];
+};
+
 export default function TrendingNow() {
-    const [trendingItems, setTrendingItems] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const scrollRef = useRef(null);
+
+    // Using SWR for data fetching
+    const { data: products, error, isLoading } = useSWR(`${API_BASE_URL}/products`, fetcher);
 
     // This function now scrolls by the container's width, making it responsive.
     const scroll = (direction) => {
@@ -38,34 +54,13 @@ export default function TrendingNow() {
             scrollRef.current.scrollTo({ left: scrollTo, behavior: "smooth" });
         }
     };
-
-    useEffect(() => {
-        async function fetchTrending() {
-            try {
-                const res = await fetch(
-                    `${API_BASE_URL}/products`
-                );
-                if (!res.ok) throw new Error(`API Error: ${res.status}`);
-
-                const data = await res.json();
-                const products = data.payload || [];
-                
-                // Your existing logic for filtering trending products
-                const filtered = products
-                    .filter((item) => item.productId >= 1 && item.productId <= 30)
-                    .slice(0, 10);
-
-                setTrendingItems(filtered);
-            } catch (err) {
-                console.error("Failed to fetch trending products:", err);
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        fetchTrending();
-    }, []);
+    
+    // Filter for trending items from the fetched data
+    const trendingItems = products
+        ? products
+            .filter((item) => item.productId >= 1 && item.productId <= 30)
+            .slice(0, 10)
+        : [];
 
     return (
         <section className="w-full py-8 md:py-12">
@@ -76,7 +71,7 @@ export default function TrendingNow() {
                         Trending Now
                     </h2>
                     {/* Scroll arrows are only shown if there are products to scroll */}
-                    {!loading && trendingItems.length > 0 && (
+                    {!isLoading && trendingItems.length > 0 && (
                          <div className="flex gap-2">
                             <button
                                 onClick={() => scroll("left")}
@@ -101,14 +96,14 @@ export default function TrendingNow() {
                     ref={scrollRef}
                     className="flex overflow-x-auto scroll-smooth snap-x snap-mandatory no-scrollbar -mx-2" // Negative margin to align cards with container edges
                 >
-                    {loading ? (
+                    {isLoading ? (
                         Array.from({ length: 5 }).map((_, index) => (
                             <SkeletonCard key={index} />
                         ))
                     ) : error ? (
                         <div className="w-full text-center py-10 text-red-500">
                             <p>Failed to load products. Please try again later.</p>
-                            <p className="text-sm text-gray-500">{error}</p>
+                            <p className="text-sm text-gray-500">{error.message}</p>
                         </div>
                     ) : trendingItems.length > 0 ? (
                         trendingItems.map((item) => {

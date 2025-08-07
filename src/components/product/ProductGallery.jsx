@@ -16,18 +16,6 @@ import Link from 'next/link';
  * }
  */
 
-const isVideoMime = async (url) => {
-  try {
-    // Use a HEAD request to get headers without downloading the full file
-    const res = await fetch(url, { method: 'HEAD' });
-    const type = res.headers.get('Content-Type');
-    return type?.startsWith('video/');
-  } catch (err) {
-    console.error('Error checking MIME type:', err);
-    return false; // Assume it's not a video on error
-  }
-};
-
 // Simple skeleton box component for loading states
 const SkeletonBox = ({ className }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} />
@@ -36,29 +24,28 @@ const SkeletonBox = ({ className }) => (
 const ProductGallery = ({ product }) => {
   const mediaItems = product?.fileUrls ?? [];
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [mediaTypes, setMediaTypes] = useState([]); // Stores 'video' or 'image' for each item
 
-  useEffect(() => {
-    const detectMediaTypes = async () => {
-      // Check each URL to determine if it's a video or image
-      const types = await Promise.all(
-        mediaItems.map(async (url) => (await isVideoMime(url) ? 'video' : 'image'))
-      );
-      setMediaTypes(types);
-    };
-
-    if (mediaItems.length > 0) {
-      detectMediaTypes();
+  // FIX: Get media type directly from the content_type provided by the backend
+  const getMediaType = (url, contentType) => {
+    if (contentType) {
+      return contentType.startsWith('video') ? 'video' : 'image';
     }
-  }, [mediaItems]);
+    // Fallback for older data that might not have contentType
+    return /\.(mp4|mov|webm|avi|mkv)$/i.test(url) ? 'video' : 'image';
+  };
 
-  // Show a skeleton UI while media types are being determined to prevent layout shifts
-  if (mediaTypes.length !== mediaItems.length) {
+  // The mediaTypes can now be determined without fetching
+  const mediaTypes = mediaItems.map((item) =>
+    getMediaType(item.url, item.contentType)
+  );
+
+  // No need for a loading skeleton for media types anymore, but we'll keep one for initial product load.
+  if (!product) {
     return (
       <div className="flex flex-row gap-3 w-full max-w-full overflow-hidden">
         {/* Thumbnails skeleton (vertical column) */}
         <div className="flex flex-col gap-2">
-          {[...Array(Math.min(mediaItems.length, 5) || 1)].map((_, i) => (
+          {[...Array(1)].map((_, i) => (
             <SkeletonBox
               key={i}
               className="w-[84px] h-[64px] sm:w-[94px] sm:h-[94px] rounded-lg"
@@ -77,9 +64,9 @@ const ProductGallery = ({ product }) => {
   return (
     <div className="flex flex-row gap-3 w-full max-w-full overflow-hidden">
       {/* Thumbnails - vertical layout with hidden scrollbar */}
-      <div className="flex flex-col gap-2 max-h-[300px] sm:max-h-[400px]  no-scrollbar">
+      <div className="flex flex-col gap-2 max-h-[300px] sm:max-h-[400px] no-scrollbar">
         {mediaItems.map((src, index) => {
-          const isVideo = mediaTypes[index] === 'video';
+          const isVideo = getMediaType(src, product.contentTypes?.[index]) === 'video';
 
           return (
             <button
@@ -107,6 +94,7 @@ const ProductGallery = ({ product }) => {
                   height={94}
                   className="w-full h-full object-cover"
                   priority={index < 5} // Prioritize loading for the first few images
+                  quality={75} // Lower quality for thumbnails
                 />
               )}
               {isVideo && (
@@ -128,7 +116,7 @@ const ProductGallery = ({ product }) => {
       {/* Main Media Display */}
       <div className="flex-grow w-full h-[300px] sm:h-[400px] rounded-lg overflow-hidden border border-gray-200 relative">
         {mediaItems.length > 0 ? (
-          mediaTypes[selectedIndex] === 'video' ? (
+          getMediaType(mediaItems[selectedIndex], product.contentTypes?.[selectedIndex]) === 'video' ? (
             <video
               key={mediaItems[selectedIndex]} // Add key to force re-render on source change
               src={mediaItems[selectedIndex]}
@@ -150,18 +138,19 @@ const ProductGallery = ({ product }) => {
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="object-cover"
                 priority
+                quality={85} // Slightly higher quality for the main image
               />
             </Link>
           )
         ) : (
           // Placeholder for when there are no images
           <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-             <Image
-                  src={'/images/placeholder.jpg'}
-                  alt="Placeholder image"
-                  fill
-                  className="object-cover"
-              />
+            <Image
+              src={'/images/placeholder.jpg'}
+              alt="Placeholder image"
+              fill
+              className="object-cover"
+            />
           </div>
         )}
       </div>
