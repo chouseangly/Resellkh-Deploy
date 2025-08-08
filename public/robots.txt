@@ -1,0 +1,12 @@
+# Allow all user agents to crawl the site
+User-agent: *
+Allow: /
+
+# Disallow crawling of specific private routes
+Disallow: /api/
+Disallow: /profile/edit-profile/
+Disallow: /sell/
+Disallow: /favourites/
+
+# Location of sitemap file
+Sitemap: https://www.resellkh.shop/sitemap.xml

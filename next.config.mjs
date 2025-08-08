@@ -18,7 +18,7 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
       },
-      // ✅ FIX: Added your new dedicated gateway hostname
+
       {
         protocol: 'https',
         hostname: 'chocolate-negative-porcupine-503.mypinata.cloud',

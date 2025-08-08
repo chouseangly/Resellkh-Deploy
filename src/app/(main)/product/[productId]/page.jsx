@@ -4,6 +4,47 @@ import { getProductById } from '@/components/services/getProduct.service';
 import { decryptId } from '@/utils/encryption';
 import ProductPageClient from './ProductPageClient';
 
+
+export async function generateMetadata({ params }) {
+  const encryptedProductId = params?.productId;
+  if (!encryptedProductId) {
+    return { title: "Invalid Product" };
+  }
+
+  let productId;
+  try {
+    productId = decryptId(decodeURIComponent(encryptedProductId));
+  } catch (err) {
+    return { title: "Invalid Product" };
+  }
+
+  const product = await getProductById(productId);
+
+  if (!product) {
+    return {
+      title: "Product Not Found",
+    };
+  }
+
+  // Dynamically create metadata based on the product
+  return {
+    title: product.productName,
+    description: product.description,
+    openGraph: {
+      title: `${product.productName} on ResellKH`,
+      description: product.description,
+      images: [
+        {
+          url: product.fileUrls?.[0] || '/og-image.jpg', // Use the first product image
+          width: 800,
+          height: 600,
+          alt: product.productName,
+        },
+      ],
+      type: 'article',
+    },
+  };
+}
 // A skeleton loader to show while the page is being generated on the server.
 const LoadingSkeleton = () => (
   <div className="mx-auto px-4 sm:px-6 lg:px-20 py-6 bg-white max-w-screen-2xl animate-pulse">

@@ -115,28 +115,7 @@ export default function Notifications() {
     }
   };
 
-  // ✨ NEW: Function to mark all notifications as read
-  const handleMarkAllAsRead = async () => {
-    const unreadIds = notifications.filter(n => n.unread).map(n => n.id);
-    if (unreadIds.length === 0) return;
-
-    const originalNotifications = [...notifications];
-    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
-
-    try {
-      const token = localStorage.getItem("token");
-      const userData = parseJwt(token);
-      const userId = userData?.userId || userData?.id;
-      if (!token || !userId) throw new Error("Authentication details are missing.");
-
-      await markAllNotificationsAsRead(token, userId);
-      dispatchNavbarUpdate(); // ✨ Notify navbar
-    } catch (error) {
-        console.error("Failed to mark all as read:", error);
-        setNotifications(originalNotifications); // Revert UI on error
-    }
-  };
-
+ 
   const filteredNotifications = notifications.filter((n) =>
     activeTab === "all" ? true : n.unread
   );
@@ -152,14 +131,7 @@ export default function Notifications() {
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">
               Notifications
             </h1>
-            {unreadCount > 0 && (
-                 <button 
-                 onClick={handleMarkAllAsRead}
-                 className="text-sm font-medium text-orange-600 hover:text-orange-800 transition-colors"
-               >
-                 Mark all as read
-               </button>
-            )}
+        
           </div>
 
           <NotificationTabs
