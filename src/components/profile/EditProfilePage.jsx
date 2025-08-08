@@ -60,7 +60,7 @@ export default function EditProfilePage({ sellerId }) {
   const router = useRouter();
   const fileInputRef = useRef(null);
   const coverInputRef = useRef(null);
-  const [selectedImage, setSelectedImage] = useState("/default-avatar.png");
+  const [selectedImage, setSelectedImage] = useState("/images/profile/profile.png");
   const [selectedCoverImage, setSelectedCoverImage] = useState("/cover.jpg");
 
   // Get encrypted profile URL

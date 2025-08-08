@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { toast, Toaster } from "react-hot-toast";
 import { FiMail } from "react-icons/fi";
 import Input from "@/components/ui/Input";
-import Image from "next/image";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -55,7 +54,7 @@ export default function ForgotPassword() {
 
       {/* Left Illustration */}
       <div className="hidden lg:flex w-1/2 justify-between">
-        <Image
+        <img
           src="/images/auth/forgotpassword.jpg"
           alt="Forgot password illustration"
           className="max-w-[430px] h-auto"
@@ -65,7 +64,7 @@ export default function ForgotPassword() {
       {/* Right Form */}
       <div className="w-full lg:w-1/2 max-w-md space-y-6">
         <div className="flex justify-center mb-12">
-          <Image src="/images/auth/logo.jpg" alt="logo" className="w-[130px]" />
+          <img src="/images/auth/logo.jpg" alt="logo" className="w-[130px]" />
         </div>
 
         <div className="text-center lg:text-left">

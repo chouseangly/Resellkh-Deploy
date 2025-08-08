@@ -10,8 +10,7 @@ import ImageScanModal from "./navbar/ImageScanModal";
 import ConfirmLogout from "./navbar/Confirmlogout";
 import { encryptId } from "@/utils/encryption";
 import { Heart, Bell, Menu, X, ChevronDown, Search } from "lucide-react";
-// Make sure this path is correct for your project structure
-import {fetchAllNotifications} from "../services/notification.service"
+import { fetchAllNotifications } from "../services/notification.service";
 import { fetchUserProfile } from "../services/userprofile.service";
 
 export default function AuthNavbar() {
@@ -21,7 +20,6 @@ export default function AuthNavbar() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
-  const [cartItemCount, setCartItemCount] = useState(0);
   const [hasUnread, setHasUnread] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -57,7 +55,7 @@ export default function AuthNavbar() {
     { name: "Vehicle", key: "vehicle" },
     { name: "Other", key: "other" },
   ];
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  
   useEffect(() => {
     const loadUser = async () => {
       if (status === "authenticated" && session?.user?.id && session?.accessToken) {
@@ -110,9 +108,7 @@ export default function AuthNavbar() {
   };
   
   const checkUnread = async () => {
-    // Prevent check if session or user is not ready
     if (!session?.accessToken || !user?.id) return;
-
     try {
       const allNotifications = await fetchAllNotifications(session.accessToken, user.id);
       if (allNotifications) {
@@ -127,7 +123,6 @@ export default function AuthNavbar() {
     }
   };
 
-  // Run the check when the user/session first loads
   useEffect(() => {
     if (user && session) {
         isSigningOut.current = false;
@@ -137,24 +132,18 @@ export default function AuthNavbar() {
     }
   }, [user, session]);
 
-
-  // ✨ THIS IS THE MISSING PIECE ✨
-  // This effect listens for the update event from the notifications page.
   useEffect(() => {
     const handleNotificationsUpdate = () => {
       console.log("Navbar heard that notifications were updated. Re-checking status...");
       checkUnread();
     };
 
-    // Listen for the custom event
     window.addEventListener('notifications-updated', handleNotificationsUpdate);
 
-    // Cleanup: remove the event listener when the component unmounts
     return () => {
       window.removeEventListener('notifications-updated', handleNotificationsUpdate);
     };
-  }, [user, session]); // Dependencies ensure `checkUnread` has the latest data
-  // ✨ END OF THE FIX ✨
+  }, [user, session]);
 
 
   useEffect(() => {
@@ -164,7 +153,7 @@ export default function AuthNavbar() {
       }
       if (
         desktopCategoryRef.current && !desktopCategoryRef.current.contains(event.target) &&
-        mobileCategoryRef.current && !mobileCategoryRef.current.contains(event.target)
+        (!mobileCategoryRef.current || !mobileCategoryRef.current.contains(event.target))
       ) {
         setCategoryOpen(false);
       }
@@ -213,25 +202,22 @@ export default function AuthNavbar() {
 
   return (
     <div className="w-full sticky top-0 z-[200] bg-white shadow-sm">
-      {/* Top Navigation Bar */}
       <div className="px-4 sm:px-6 lg:px-8 py-3 border-b border-gray-100">
         <div className="flex items-center justify-between">
-          {/* Logo */}
           <div className="flex items-center">
             <Link href="/">
               <div className="flex items-center space-x-2 cursor-pointer">
                <Image
-                   src="/images/auth/logo1.png"
-                    alt="ResellKH Logo"
-                    width={120} 
-                    height={60} 
-                    className="h-12 w-auto"
+                  src="/images/auth/logo1.png"
+                  alt="ResellKH Logo"
+                  width={120} 
+                  height={60} 
+                  className="h-12 w-auto"
                 />
               </div>
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center mt-2 space-x-1 lg:space-x-2 ">
             {topCategories.map((cat) => (
               <Link
@@ -270,7 +256,6 @@ export default function AuthNavbar() {
             </div>
           </nav>
 
-          {/* User Actions - Desktop */}
           <div className="hidden md:flex items-center space-x-2 mt-2 ">
             {!user ? (
               <>
@@ -325,7 +310,7 @@ export default function AuthNavbar() {
                       <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors">
                         <div className="w-12 h-12 rounded-full border bg-gray-100 overflow-hidden">
                           <Image
-                            src={user.avatar}
+                            src={user.avatar || DEFAULT_AVATAR_URL}
                             alt="User Avatar"
                             width={48}
                             height={48}
@@ -369,7 +354,6 @@ export default function AuthNavbar() {
             )}
           </div>
 
-          {/* Mobile Menu & Search Buttons */}
           <div className="md:hidden flex items-center space-x-2">
             <button
               onClick={() => {
@@ -393,7 +377,6 @@ export default function AuthNavbar() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div 
           ref={mobileMenuRef} 
@@ -402,10 +385,9 @@ export default function AuthNavbar() {
           <div className="px-4 py-3 space-y-4">
             {user ? (
               <div className="flex items-center space-x-3 p-2 bg-gray-50 rounded-lg">
-                {/* ✨ FIX IS HERE ✨ */}
                 <div className="w-12 h-12 rounded-full bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-200">
                   <Image
-                    src={user.avatar}
+                    src={user.avatar || DEFAULT_AVATAR_URL}
                     alt="User Avatar"
                     width={48}
                     height={48}
@@ -415,7 +397,6 @@ export default function AuthNavbar() {
                     }}
                   />
                 </div>
-                {/* ✨ END OF FIX ✨ */}
                 <div>
                   <p className="text-sm font-medium text-gray-900">{user.name}</p>
                   <Link 
@@ -504,9 +485,7 @@ export default function AuthNavbar() {
         </div>
       )}
 
-      {/* Search and Location Row */}
       <div className="px-4 sm:px-6 lg:px-8 py-3">
-        {/* Desktop Search and Location */}
         <div className="hidden md:flex gap-3 w-full">
           <div className="w-[70%]">
             <SearchBar />
@@ -517,7 +496,6 @@ export default function AuthNavbar() {
         </div>
       </div>
       
-      {/* Mobile Search Dropdown */}
       {mobileSearchOpen && (
         <div 
           ref={mobileSearchRef} 
@@ -535,9 +513,8 @@ export default function AuthNavbar() {
         </div>
       )}
 
-      {/* Mobile Category Dropdown */}
       {categoryOpen && (
-        <div className="absolute z-40 w-full left-0 bg-white border-t border-gray-200 shadow-lg md:hidden">
+        <div ref={mobileCategoryRef} className="absolute z-40 w-full left-0 bg-white border-t border-gray-200 shadow-lg md:hidden">
           <div className="grid grid-cols-2 gap-1 p-2">
             {[...topCategories, ...dropdownCategories].map((cat) => (
               <Link 

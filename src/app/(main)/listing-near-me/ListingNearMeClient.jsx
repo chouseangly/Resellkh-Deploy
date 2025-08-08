@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { fetchNearbyProducts } from "@/components/services/nearBy.service";
 import ProductCart from "@/components/domain/ProductCart";
-import Image from "next/image";
+
 
 // --- Helper function to calculate distance ---
 /**
@@ -115,7 +115,7 @@ const ApiErrorState = ({ error, onRetry }) => (
 
 const EmptyState = () => (
   <div className="flex flex-col items-center justify-center py-16 text-center">
-    <Image
+    <img
       src="/images/story set/no listings.jpg"
       alt="No Listings Found"
       className="w-[350px] h-auto mb-6"

@@ -1,44 +1,59 @@
 'use client';
 
-import { useState } from 'react';
-import useSWR from 'swr';
+import useSWRInfinite from 'swr/infinite';
 import ProductCart from '../domain/ProductCart';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-const PRODUCTS_PER_LOAD = 20;
 
-// Generic fetcher function for useSWR
+// The getKey function tells SWRInfinite how to fetch the data for each page.
+const getKey = (pageIndex, previousPageData) => {
+  // If the previous page was the last one, we don't need to fetch more.
+  if (previousPageData && previousPageData.last) {
+    return null;
+  }
+  // This is the first page to be fetched.
+  if (pageIndex === 0) {
+    return `/products?page=0&size=20`;
+  }
+  // This is for subsequent pages.
+  return `/products?page=${pageIndex}&size=20`;
+};
+
+// The fetcher function now correctly parses the paginated response from the API.
 const fetcher = async (url) => {
-  const res = await fetch(url);
+  const res = await fetch(`${API_BASE_URL}${url}`);
   if (!res.ok) {
     const error = new Error('An error occurred while fetching the data.');
-    // Attach extra info to the error object.
     error.info = await res.json();
     error.status = res.status;
     throw error;
   }
   const data = await res.json();
-  return data.payload || [];
+  // We return the entire payload, which includes the content and pagination info.
+  return data.payload;
 };
 
-
 const OtherProducts = () => {
-  const [visibleCount, setVisibleCount] = useState(PRODUCTS_PER_LOAD);
-  const [loadingMore, setLoadingMore] = useState(false);
+  // useSWRInfinite handles all the pagination logic for us.
+  const {
+    data: pages = [],
+    error,
+    size,
+    setSize,
+    isLoading
+  } = useSWRInfinite(getKey, fetcher);
 
-  // Use SWR to fetch, cache, and revalidate data
-  const { data: products = [], error, isLoading } = useSWR(`${API_BASE_URL}/products`, fetcher);
+  // We flatten the pages array to get a single list of products.
+  const products = pages ? pages.flatMap(page => page.content) : [];
+  const isLoadingMore = isLoading && pages.length > 0;
+  const isReachingEnd = !pages || pages[pages.length - 1]?.last;
 
   const handleLoadMore = () => {
-    setLoadingMore(true);
-    // Simulate loading time for UX
-    setTimeout(() => {
-      setVisibleCount((prev) => prev + PRODUCTS_PER_LOAD);
-      setLoadingMore(false);
-    }, 600); // Adjust this delay if needed
+    // We just need to tell SWRInfinite to fetch the next page.
+    if (!isReachingEnd && !isLoadingMore) {
+      setSize(size + 1);
+    }
   };
-
-  const visibleProducts = products.slice(0, visibleCount);
 
   return (
     <section className="mb-12 md:mt-12 lg:mt-12">
@@ -46,14 +61,14 @@ const OtherProducts = () => {
         Other products you may like
       </h2>
 
-      {isLoading ? (
+      {isLoading && products.length === 0 ? (
         <p className="text-gray-500">Loading products...</p>
       ) : error ? (
-         <p className="text-red-500 text-center">Failed to load products.</p>
+        <p className="text-red-500 text-center">Failed to load products.</p>
       ) : (
         <>
           <div className="grid grid-cols-2 px-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-[26px] justify-items-center">
-            {visibleProducts.map((item) => {
+            {products.map((item) => {
               const price =
                 typeof item.productPrice === 'number'
                   ? item.discountPercent
@@ -75,7 +90,7 @@ const OtherProducts = () => {
                   description={item.description}
                   price={price.toFixed(2)}
                   originalPrice={
-                    item.discountPercent ? item.productPrice : null
+                    item.discountPercent ? item.productPrice.toFixed(2) : null
                   }
                   discountText={
                     item.discountPercent
@@ -87,14 +102,14 @@ const OtherProducts = () => {
             })}
           </div>
 
-          {visibleCount < products.length && (
+          {!isReachingEnd && (
             <div className="text-center mt-8">
               <button
                 onClick={handleLoadMore}
-                disabled={loadingMore}
+                disabled={isLoadingMore}
                 className={`px-6 py-2 md:px-8 md:py-3 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors flex items-center justify-center mx-auto disabled:opacity-75 disabled:cursor-not-allowed`}
               >
-                {loadingMore ? (
+                {isLoadingMore ? (
                   <>
                     <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
                     Loading...

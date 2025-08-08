@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
 import Input from "@/components/ui/Input";
@@ -126,7 +125,7 @@ export default function LoginForm() {
     <div className="min-h-screen flex items-center justify-center px-6 bg-white">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl w-full items-center">
         <div className="hidden md:flex justify-center">
-          <Image
+          <img
             src="/images/auth/log in.jpg"
             alt="Login Illustration"
             width={400}
@@ -136,7 +135,7 @@ export default function LoginForm() {
 
         <div className="w-full max-w-md mx-auto">
           <div className="flex justify-center mb-6">
-            <Image src="/images/auth/logo.jpg" alt="logo" className="w-[130px]" />
+            <img src="/images/auth/logo.jpg" alt="logo" className="w-[130px]" />
           </div>
 
           {apiError && (
@@ -205,7 +204,7 @@ export default function LoginForm() {
               onClick={handleGoogleLogin}
               className="w-full flex items-center justify-center gap-3 border border-gray-900 p-3 rounded-full hover:bg-gray-50 transition"
             >
-              <Image src="/google-20.png" alt="Google" className="w-5 h-5" />
+              <img src="/google-20.png" alt="Google" className="w-5 h-5" />
               <span className="text-sm font-medium text-gray-700">
                 Continue with Google
               </span>

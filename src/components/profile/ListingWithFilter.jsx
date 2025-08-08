@@ -4,7 +4,7 @@
 import { useState, useMemo } from "react";
 import useSWR from 'swr';
 import Cart from "./someComponent/Cart";
-import Image from "next/image";
+
 
 const SkeletonCard = () => (
   <div className="w-full animate-pulse bg-gray-100 p-4 rounded-lg">
@@ -248,7 +248,7 @@ export default function ListingsWithFilter({ userId }) {
         {/* Product Grid or Empty State */}
         {filteredProducts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Image
+            <img
               src="/images/story set/no listings.jpg"
               alt="No Listings"
               className="w-48 sm:w-64 md:w-80 h-auto mb-6"

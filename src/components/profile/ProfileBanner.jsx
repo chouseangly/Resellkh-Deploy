@@ -27,7 +27,7 @@ export default function ProfileBanner({ isOwner, user, rating = 0, reviewsCount 
                    md:h-[220px] lg:h-[280px]"
       >
         {cover ? (
-          <Image
+          <img
             src={cover}
             alt="Cover"
             fill

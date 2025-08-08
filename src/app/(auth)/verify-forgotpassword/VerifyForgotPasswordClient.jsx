@@ -3,7 +3,7 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import Image from "next/image";
+
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -121,7 +121,7 @@ export default function VerifyForgotPasswordClient() {
     <div className="min-h-screen flex flex-col lg:flex-row items-center justify-center bg-white px-4 sm:px-8 md:px-12 lg:px-[210px] py-12 gap-10">
       {/* Left Image */}
       <div className="hidden md:flex lg:w-1/2 justify-center">
-        <Image
+        <img
           src="/images/auth/verify OTP.jpg"
           alt="OTP Illustration"
           className="w-full max-w-[400px] h-auto"

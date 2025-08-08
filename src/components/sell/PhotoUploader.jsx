@@ -137,7 +137,7 @@ export default function PhotoUploader({ files, setFiles }) {
       return isVideo ? (
         <video controls className="w-full h-48 object-cover rounded-lg" src={file.url} />
       ) : (
-        <Image src={file.url} alt="Draft preview" className="w-full h-48 object-cover rounded-lg" />
+        <img src={file.url} alt="Draft preview" className="w-full h-48 object-cover rounded-lg" />
       );
     }
 
@@ -147,7 +147,7 @@ export default function PhotoUploader({ files, setFiles }) {
       return isVideo ? (
         <video controls className="w-full h-48 object-cover rounded-lg" src={src} />
       ) : (
-        <Image src={src} alt="Upload preview" className="w-full h-48 object-cover rounded-lg" />
+        <img src={src} alt="Upload preview" className="w-full h-48 object-cover rounded-lg" />
       );
     }
     return null;
@@ -183,7 +183,7 @@ export default function PhotoUploader({ files, setFiles }) {
             disabled={files.length >= 5}
           />
           <div className="mb-4">
-            <Image src="/images/story set/image.jpg" alt="Upload Icon" className="w-10" />
+            <img src="/images/story set/image.jpg" alt="Upload Icon" className="w-10" />
           </div>
           <div className="mb-4">
             <span className={`px-6 py-2 bg-orange-500 text-white rounded-full transition ${

@@ -6,7 +6,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import { getProductsByCategoryId } from "@/components/services/productCategory.service";
 import ProductCart from "@/components/domain/ProductCart";
-import Image from "next/image";
+
 const categoryDisplayNames = {
   1: "Accessories",
   2: "Beauty",
@@ -144,7 +144,7 @@ export default function CategoryClientPage({ categoryId, initialProducts }) {
 
             {products.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 sm:py-16 text-center">
-                <Image
+                <img
                   src="/images/story set/no listings.jpg"
                   alt="No Listings"
                   className="w-[250px] sm:w-[300px] md:w-[350px] h-auto mb-4 sm:mb-6"

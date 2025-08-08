@@ -35,13 +35,15 @@ const fetcher = async (url) => {
         throw error;
     }
     const data = await res.json();
-    return data.payload || [];
+    // The API now returns a paginated object, so we return the whole payload.
+    // Default to an object with an empty content array if payload is missing.
+    return data.payload || { content: [] };
 };
 
 export default function TrendingNow() {
     const scrollRef = useRef(null);
 
-    // Using SWR for data fetching
+    // Using SWR for data fetching. `products` will be the paginated object.
     const { data: products, error, isLoading } = useSWR(`${API_BASE_URL}/products`, fetcher);
 
     // This function now scrolls by the container's width, making it responsive.
@@ -55,11 +57,11 @@ export default function TrendingNow() {
         }
     };
     
-    // Filter for trending items from the fetched data
-    const trendingItems = products
-        ? products
-            .filter((item) => item.productId >= 1 && item.productId <= 30)
-            .slice(0, 10)
+    // ✨ FIX: Filter for trending items from the `products.content` array.
+    const trendingItems = products && Array.isArray(products.content)
+        ? products.content
+              .filter((item) => item.productId >= 1 && item.productId <= 30)
+              .slice(0, 10)
         : [];
 
     return (
@@ -72,7 +74,7 @@ export default function TrendingNow() {
                     </h2>
                     {/* Scroll arrows are only shown if there are products to scroll */}
                     {!isLoading && trendingItems.length > 0 && (
-                         <div className="flex gap-2">
+                        <div className="flex gap-2">
                             <button
                                 onClick={() => scroll("left")}
                                 className="p-2 bg-white border border-gray-200 rounded-full shadow-sm hover:bg-gray-100 transition-colors duration-200"
@@ -127,14 +129,14 @@ export default function TrendingNow() {
                                         title={item.productName}
                                         description={item.description}
                                         price={price.toFixed(2)}
-                                        originalPrice={item.discountPercent > 0 ? item.productPrice : null}
+                                        originalPrice={item.discountPercent > 0 ? item.productPrice.toFixed(2) : null}
                                         discountText={item.discountPercent > 0 ? `${item.discountPercent}% OFF` : null}
                                     />
                                 </div>
                             );
                         })
                     ) : (
-                         <div className="w-full text-center py-10 text-gray-500">
+                        <div className="w-full text-center py-10 text-gray-500">
                             <p>No trending products found at the moment.</p>
                         </div>
                     )}

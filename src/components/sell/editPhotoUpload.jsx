@@ -280,7 +280,7 @@ export default function EditPhotoUploader({ initialFiles = [], onFilesChange, pr
                         onChange={handleFileInputChange}
                         className="hidden"
                     />
-                    <Image src="/images/story set/image.jpg" alt="Upload" className="w-[40px] mb-4" />
+                    <img src="/images/story set/image.jpg" alt="Upload" className="w-[40px] mb-4" />
                     <span className="px-6 py-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition mb-4">
                         {mediaItems.length === 0 ? 'Select photos/videos' : 'Add more'}
                     </span>
@@ -324,7 +324,7 @@ export default function EditPhotoUploader({ initialFiles = [], onFilesChange, pr
                                             preload="metadata"
                                         />
                                     ) : (
-                                        <Image
+                                        <img
                                             src={item.previewUrl} 
                                             alt={item.name} 
                                             className="w-full h-full object-cover" 

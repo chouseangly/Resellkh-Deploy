@@ -190,7 +190,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
         {reviews.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-6 text-center">
-            <Image
+            <img
               src="/images/story set/amico.jpg"
               alt="No reviews"
               className="w-[300px] h-auto mb-4"

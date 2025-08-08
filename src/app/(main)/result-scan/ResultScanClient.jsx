@@ -181,7 +181,7 @@ export default function ResultScanClient() {
             Search any image with Lens
           </h2>
           <div className="flex justify-center">
-            <Image
+            <img
               src={imgSrc}
               alt="Scanned"
               className="w-48 sm:w-60 md:w-72 h-auto rounded-xl border object-contain bg-white"

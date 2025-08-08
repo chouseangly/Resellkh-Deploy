@@ -118,7 +118,7 @@ export default function Register() {
 
       <div className="w-full lg:w-1/2 max-w-md py-8 space-y-4">
         <div className="flex justify-center mb-2">
-          <Image src="/images/auth/logo.jpg" alt="logo" className="w-[130px]" />
+          <img src="/images/auth/logo.jpg" alt="logo" className="w-[130px]" />
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -236,7 +236,7 @@ export default function Register() {
           onClick={handleGoogleLogin}
           className="w-full flex items-center justify-center gap-3 border border-gray-900 p-3 rounded-full hover:bg-gray-50 transition"
         >
-          <Image src="/google-20.png" alt="Google" className="w-5 h-5" />
+          <img src="/google-20.png" alt="Google" className="w-5 h-5" />
           <span className="text-sm font-medium text-gray-700">Continue with Google</span>
         </button>
 

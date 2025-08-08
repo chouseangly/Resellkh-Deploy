@@ -4,18 +4,19 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Clock, BellOff } from "lucide-react"; // Using modern icons
+import { Clock, BellOff } from "lucide-react"; 
 
 import { encryptId } from "@/utils/encryption";
 import { getProductIdByNotificationId } from "@/components/services/getProductIdByNotId.service";
 import {
   fetchAllNotifications,
   markNotificationAsRead,
+  markAllNotificationsAsRead, // ✨ Import the new service
   parseJwt,
   formatTimestamp,
 } from "@/components/services/notification.service";
 
-// Categorize notifications (Your original logic)
+// Categorize notifications by time
 const categorizeByTime = (notifications) => {
   const now = new Date();
   const today = [], lastWeek = [], older = [];
@@ -31,7 +32,6 @@ const categorizeByTime = (notifications) => {
 };
 
 export default function Notifications() {
-  // --- Your original state and logic ---
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -65,7 +65,7 @@ export default function Notifications() {
             unread: !notification.isRead,
             createdAt: notification.createdAt,
           })
-        );
+        ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sort newest first
 
         setNotifications(mappedNotifications);
       } catch (err) {
@@ -74,19 +74,15 @@ export default function Notifications() {
         setLoading(false);
       }
     };
-
     loadNotifications();
   }, []);
 
-  const handleNotificationClick = async (
-    notificationId,
-    newExpandedSet = null
-  ) => {
-    if (notificationId === "__toggleExpandOnly__" && newExpandedSet) {
-      setExpandedNotifications(newExpandedSet);
-      return;
-    }
+  // ✨ Dispatches event to update the navbar icon
+  const dispatchNavbarUpdate = () => {
+    window.dispatchEvent(new Event('notifications-updated'));
+  };
 
+  const handleNotificationClick = async (notificationId) => {
     const notification = notifications.find((n) => n.id === notificationId);
     if (!notification) return;
 
@@ -103,22 +99,43 @@ export default function Notifications() {
       setNotifications((prev) =>
         prev.map((n) => (n.id === notificationId ? { ...n, unread: false } : n))
       );
+      
       try {
         const token = localStorage.getItem("token");
         const userData = parseJwt(token);
         const userId = userData?.userId || userData?.id;
-        if (token && userId) {
-          await markNotificationAsRead(token, userId, notificationId);
-        } else {
-          throw new Error("Authentication details are missing.");
-        }
+        if (!token || !userId) throw new Error("Authentication details are missing.");
+        
+        await markNotificationAsRead(token, userId, notificationId);
+        dispatchNavbarUpdate(); // ✨ Notify navbar after successful API call
       } catch (error) {
-        console.error("Failed to mark notification as read on server:", error);
-        setNotifications(originalNotifications);
+        console.error("Failed to mark notification as read:", error);
+        setNotifications(originalNotifications); // Revert UI on error
       }
     }
   };
-  // --- End of your original logic ---
+
+  // ✨ NEW: Function to mark all notifications as read
+  const handleMarkAllAsRead = async () => {
+    const unreadIds = notifications.filter(n => n.unread).map(n => n.id);
+    if (unreadIds.length === 0) return;
+
+    const originalNotifications = [...notifications];
+    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+
+    try {
+      const token = localStorage.getItem("token");
+      const userData = parseJwt(token);
+      const userId = userData?.userId || userData?.id;
+      if (!token || !userId) throw new Error("Authentication details are missing.");
+
+      await markAllNotificationsAsRead(token, userId);
+      dispatchNavbarUpdate(); // ✨ Notify navbar
+    } catch (error) {
+        console.error("Failed to mark all as read:", error);
+        setNotifications(originalNotifications); // Revert UI on error
+    }
+  };
 
   const filteredNotifications = notifications.filter((n) =>
     activeTab === "all" ? true : n.unread
@@ -131,9 +148,19 @@ export default function Notifications() {
     <section className="bg-slate-100 w-full px-[7%] min-h-screen py-8 sm:py-12">
       <div className="w-full mx-auto px-2">
         <div className="bg-white border border-slate-200/80 rounded-3xl p-4 sm:p-8 shadow-lg shadow-slate-200/50">
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-6">
-            Notifications
-          </h1>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">
+              Notifications
+            </h1>
+            {unreadCount > 0 && (
+                 <button 
+                 onClick={handleMarkAllAsRead}
+                 className="text-sm font-medium text-orange-600 hover:text-orange-800 transition-colors"
+               >
+                 Mark all as read
+               </button>
+            )}
+          </div>
 
           <NotificationTabs
             activeTab={activeTab}
@@ -146,7 +173,7 @@ export default function Notifications() {
             {loading ? (
               <NotificationLoadingState />
             ) : error ? (
-              <NotificationErrorState error={error} />
+              <NotificationErrorState error={{ message: error }} />
             ) : filteredNotifications.length === 0 ? (
               <NoNotificationsMessage activeTab={activeTab} />
             ) : (
@@ -181,7 +208,7 @@ export default function Notifications() {
   );
 }
 
-// --- Modernized Subcomponents ---
+// --- Subcomponents (No changes needed, but included for completeness) ---
 
 function NotificationTabs({ activeTab, setActiveTab, allCount, unreadCount }) {
   return (
@@ -232,7 +259,6 @@ const NotificationLoadingState = () => (
   </div>
 );
 
-
 function NotificationSection({ title, data, ...props }) {
   if (!data || data.length === 0) return null;
   return (
@@ -261,9 +287,9 @@ function NotificationItem({ item, expandedNotifications, onNotificationClick, to
         if (!token) return alert("Please log in to view products.");
         setIsFetchingFavorite(true);
         try {
-            const res = await getProductIdByNotificationId(item.id, token);
-            if (res.payload) {
-                router.push(`/product/${encodeURIComponent(encryptId(res.payload))}`);
+            const productId = await getProductIdByNotificationId(item.id, token);
+            if (productId) {
+                router.push(`/product/${encodeURIComponent(encryptId(String(productId)))}`);
             } else {
                 alert("The associated product could not be found.");
             }
