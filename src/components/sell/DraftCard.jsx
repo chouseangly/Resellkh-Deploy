@@ -133,7 +133,7 @@ export default function DraftCard({ draft, onDelete, token }) {
             <div className="flex justify-center gap-4">
               <button
                 onClick={confirmDeleteHandler}
-                className="px-6 py-2 rounded-full bg-red-500 hover:bg-red-600 text-white font-semibold"
+                className="px-6 py-2 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-semibold"
               >
                 Yes
               </button>
