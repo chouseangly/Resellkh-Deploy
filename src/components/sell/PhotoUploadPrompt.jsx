@@ -1,109 +1,134 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { setUploadedFiles } from '@/utils/fileStore';
 import { toast } from 'react-hot-toast';
-import { deleteProductMedia } from '@/components/services/deleteProductMedia.service';
 
-// A small component for the image/video preview
-const FilePreview = ({ file, onRemove }) => {
-  const url = file.isExisting ? file.url : URL.createObjectURL(file);
-  const isVideo = (file.isExisting && file.url.includes('.mp4')) || file.type?.startsWith('video/');
 
-  return (
-    <div className="relative w-28 h-28 rounded-lg overflow-hidden border">
-      {isVideo ? (
-        <video src={url} className="w-full h-full object-cover" muted />
-      ) : (
-        <img src={url} alt="Preview" className="w-full h-full object-cover" />
-      )}
-      <button
-        type="button"
-        onClick={() => onRemove(file)}
-        className="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold"
-      >
-        &times;
-      </button>
-    </div>
-  );
-};
+export default function PhotoUploadPrompt() {
+  const fileInputRef = useRef(null);
+  const router = useRouter();
 
-export default function EditPhotoUploader({ initialFiles = [], onFilesChange, productId }) {
-  const { data: session } = useSession();
-  const [displayedFiles, setDisplayedFiles] = useState(initialFiles);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Notify the parent component whenever the files change
-  useEffect(() => {
-    // We only pass up the files that are NOT existing (i.e., new File objects)
-    const newFiles = displayedFiles.filter(f => !f.isExisting);
-    onFilesChange(newFiles);
-  }, [displayedFiles, onFilesChange]);
-
-  const handleAddFiles = (e) => {
-    const newFiles = Array.from(e.target.files);
-    if (newFiles.length === 0) return;
-
-    // Simple validation (can be expanded)
-    const validFiles = newFiles.filter(f => f.size < 20 * 1024 * 1024); // max 20MB
-    if (validFiles.length < newFiles.length) {
-      toast.error('Some files were too large and were ignored.');
-    }
-    
-    setDisplayedFiles(prev => [...prev, ...validFiles].slice(0, 5)); // Limit to 5 total
+  const getVideoDuration = (file) => {
+    return new Promise((resolve) => {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      
+      video.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(video.src);
+        resolve(video.duration);
+      };
+      
+      video.src = URL.createObjectURL(file);
+    });
   };
 
-  const handleRemove = useCallback(async (fileToRemove) => {
-    if (isLoading) return;
-
-    // ✨ FIX: This is the core logic to fix your error.
-    // If the file is an existing one, we must call the API to delete it.
-    if (fileToRemove.isExisting) {
-      setIsLoading(true);
-      try {
-        const token = session?.accessToken || localStorage.getItem('token');
-        if (!token) throw new Error("Authentication token not found.");
-        
-        // Call the deletion service with the media ID
-        await deleteProductMedia(fileToRemove.id, token);
-        toast.success("Image deleted from server.");
-
-      } catch (error) {
-        // If the API call fails, show an error and DON'T remove it from the UI.
-        toast.error(error.message);
-        setIsLoading(false);
-        return; 
+  const handleFiles = async (files) => {
+    const fileArray = Array.from(files);
+    
+    // Check if first file is a video
+    if (fileArray.length > 0) {
+      const firstFile = fileArray[0];
+      const isFirstVideo = firstFile.type.startsWith('video/');
+      
+      if (isFirstVideo) {
+        toast.error('Please upload at least one image first before adding videos');
+        return;
       }
-      setIsLoading(false);
+    }
+
+    const validFiles = [];
+    
+    for (const file of fileArray) {
+      // Validate file type
+      if (!(file.type.startsWith('image/') || file.type.startsWith('video/'))) {
+        continue;
+      }
+      
+      // Validate file size
+      if (file.size > 20 * 1024 * 1024) {
+        toast.error(`File ${file.name} is too large (max 20MB)`);
+        continue;
+      }
+      
+      // Additional validation for videos
+      if (file.type.startsWith('video/')) {
+        try {
+          const duration = await getVideoDuration(file);
+          if (duration > 10) {
+            toast.error(`Video is too long (max 10 seconds)`);
+            continue;
+          }
+        } catch (error) {
+          toast.error(`Could not validate video`);
+          continue;
+        }
+      }
+      
+      validFiles.push(file);
+    }
+
+    if (validFiles.length === 0) {
+      toast.error("No valid files selected. Please choose images or videos under 20MB.");
+      return;
+    }
+
+    if (validFiles.length < fileArray.length) {
+      toast.error("Some files were invalid and were ignored.");
     }
     
-    // If it's a new file OR if the API deletion was successful, remove it from the UI.
-    setDisplayedFiles(prev => prev.filter(f => f !== fileToRemove));
+    // Limit to 5 files
+    const finalFiles = validFiles.slice(0, 5);
 
-  }, [session, isLoading]);
+    // Store the files
+    setUploadedFiles(finalFiles);
+    
+    // Redirect to the new sell page
+    router.push('/sell/new');
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    if (e.dataTransfer.files) {
+      handleFiles(e.dataTransfer.files);
+    }
+  };
+
+  const handleClick = () => {
+    fileInputRef.current.click();
+  };
 
   return (
-    <div className="bg-white p-4 border rounded-lg space-y-4">
-      <h3 className="font-semibold text-gray-700">Product Photos & Videos</h3>
-      <div className="flex flex-wrap gap-4">
-        {displayedFiles.map((file, index) => (
-          <FilePreview key={file.id || index} file={file} onRemove={handleRemove} />
-        ))}
-        {displayedFiles.length < 5 && (
-          <label className="w-28 h-28 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer text-gray-400 hover:bg-gray-50 hover:border-orange-400">
-            <span className="text-3xl">+</span>
-            <span className="text-xs mt-1">Add More</span>
-            <input
-              type="file"
-              multiple
-              accept="image/*,video/*"
-              className="hidden"
-              onChange={handleAddFiles}
-            />
-          </label>
-        )}
+    <div
+      className="bg-orange-50 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center h-80 p-6 text-center group hover:border-orange-400 hover:bg-orange-100 transition-colors duration-300 cursor-pointer"
+      onClick={handleClick}
+      onDrop={handleDrop}
+      onDragOver={(e) => e.preventDefault()}
+    >
+      <input
+        type="file"
+        accept="image/*,video/*"
+        multiple
+        className="hidden"
+        ref={fileInputRef}
+        onChange={(e) => handleFiles(e.target.files)}
+      />
+      <div className="mb-4">
+        <img src="/images/story set/image.jpg" alt="Upload Icon" className='w-[40px]' />
       </div>
-      {isLoading && <p className="text-sm text-gray-500">Deleting image...</p>}
+      <div className="mb-4">
+        <span className="px-6 py-2 mt-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition">
+          Select photos
+        </span>
+      </div>
+      <p className="text-gray-700 text-[15px]">
+        or drag photo here <br /> (up to 5 photos/videos)
+      </p>
+      <p className="text-xs text-gray-500 mt-2">
+        Note: First upload must be an image<br />
+        Videos must be under 10 seconds
+      </p>
     </div>
   );
 }
