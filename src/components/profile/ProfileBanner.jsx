@@ -26,18 +26,16 @@ export default function ProfileBanner({ isOwner, user, rating = 0, reviewsCount 
         className="relative w-full h-[180px] rounded-2xl overflow-hidden bg-gray-100
                    md:h-[220px] lg:h-[280px]"
       >
-        {cover ? (
-          <img
-            src={cover}
+     
+          <Image
+            src={cover || "/cover1.jpg"}
             alt="Cover"
             fill
             className="object-cover w-full h-full"
             priority
             sizes="(max-width: 768px) 100vw, 100vw"
           />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-r from-blue-100 to-purple-100" />
-        )}
+  
       </div>
 
       {/* Info Card */}

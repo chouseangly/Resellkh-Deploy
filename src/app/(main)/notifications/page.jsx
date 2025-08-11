@@ -115,7 +115,9 @@ export default function Notifications() {
     }
   };
 
+  // ✨ NEW: Function to mark all notifications as read
  
+
   const filteredNotifications = notifications.filter((n) =>
     activeTab === "all" ? true : n.unread
   );
@@ -131,6 +133,7 @@ export default function Notifications() {
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">
               Notifications
             </h1>
+        
         
           </div>
 

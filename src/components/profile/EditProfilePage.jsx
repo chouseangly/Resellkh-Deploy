@@ -61,7 +61,7 @@ export default function EditProfilePage({ sellerId }) {
   const fileInputRef = useRef(null);
   const coverInputRef = useRef(null);
   const [selectedImage, setSelectedImage] = useState("/images/profile/profile.png");
-  const [selectedCoverImage, setSelectedCoverImage] = useState("/cover.jpg");
+  const [selectedCoverImage, setSelectedCoverImage] = useState("/cover1.jpg");
 
   // Get encrypted profile URL
   const getEncryptedProfileUrl = () => {
@@ -117,7 +117,7 @@ export default function EditProfilePage({ sellerId }) {
             p.profileImage ||
               "/images/profile/profile.jpg"
           );
-          setSelectedCoverImage(p.coverImage || "/cover.jpg");
+          setSelectedCoverImage(p.coverImage || "/cover1.jpg");
         } else {
           setError("Profile not found or error in response.");
         }
@@ -320,7 +320,7 @@ export default function EditProfilePage({ sellerId }) {
       setSelectedCoverImage(URL.createObjectURL(file));
       setFormData((prev) => ({ ...prev, coverImage: file }));
     } else {
-      setSelectedCoverImage("/cover.jpg");
+      setSelectedCoverImage("/cover1.jpg");
       setFormData((prev) => ({ ...prev, coverImage: null }));
       if (coverInputRef.current) coverInputRef.current.value = "";
     }
@@ -453,7 +453,6 @@ export default function EditProfilePage({ sellerId }) {
     }
   };
 
-  if (loading) return <p className="text-center py-10">Loading profile...</p>;
   if (error) return <p className="text-center py-10 text-red-500">{error}</p>;
 
   return (

@@ -35,13 +35,13 @@ export default function ResultSearchClient() {
     setLoading(true);
     setError(null);
 
-    fetch(`${API_BASE_URL}/products`)
+    fetch(`${API_BASE_URL}/products/all`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch products");
         return res.json();
       })
       .then((data) => {
-        const allProducts = data.payload || [];
+       const allProducts = Array.isArray(data.payload) ? data.payload : [];
 
         const filtered = allProducts.filter((product) =>
           product.productName.toLowerCase().includes(query.toLowerCase())

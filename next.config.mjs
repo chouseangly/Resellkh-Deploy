@@ -18,13 +18,17 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
       },
-
       {
         protocol: 'https',
         hostname: 'chocolate-negative-porcupine-503.mypinata.cloud',
       },
     ],
   },
+
+  // devIndicators: {
+  //   buildActivityPosition: false, 
+  // },
+
 };
 
 export default nextConfig;
