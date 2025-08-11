@@ -97,7 +97,7 @@ export default function PhotoUploader({ files, setFiles }) {
         try {
           const duration = await getVideoDuration(file);
           if (duration > 10) {
-            toast.error(`Video ${file.name} is too long (max 10 seconds)`);
+            toast.error(`Video is too long (max 10 seconds)`);
             continue;
           }
         } catch (error) {

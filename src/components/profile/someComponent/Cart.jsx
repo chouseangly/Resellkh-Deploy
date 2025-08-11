@@ -1,17 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { FaRegBookmark, FaBookmark } from "react-icons/fa";
 import { useBookmark } from "@/context/BookmarkContext";
-import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { encryptId } from "@/utils/encryption";
 
 export default function Cart({
   id,
-  userId, // <-- This is the prop that was receiving 'undefined'
+  userId, // The ID of the user who owns the product
   imageUrl,
   title,
   description,
@@ -27,21 +26,15 @@ export default function Cart({
   const router = useRouter();
   const { data: session } = useSession();
 
-  // --- THIS IS THE FIX ---
-  // We ensure both IDs are converted to strings before comparing.
-  // This prevents issues if one is a number and the other is a string (e.g., 24 !== "24").
-  const isOwner = session?.user?.id?.toString() === userId?.toString();
-
-  // --- Debugging Logs ---
-  // These will help you see exactly what values are being compared.
-  useEffect(() => {
-    console.log(`Product ID: ${id}, Product Owner ID: ${userId} (type: ${typeof userId}), Logged-in User ID: ${session?.user?.id} (type: ${typeof session?.user?.id}), Is Owner: ${isOwner}`);
-  }, [id, userId, session, isOwner]);
+  // FIX: Ensure a reliable comparison by converting both the session user's ID
+  // and the product's owner ID to strings. This prevents type mismatches
+  // (e.g., number vs. string) from causing the check to fail.
+  const isOwner = !!(session?.user?.id && userId && session.user.id.toString() === userId.toString());
 
   const getDiscountPercent = () => {
     if (discountText) {
       const match = discountText.match(/\d+/);
-      return match ? parseInt(match[0]) : null;
+      return match ? parseInt(match[0], 10) : null;
     }
     return null;
   };
@@ -52,13 +45,13 @@ export default function Cart({
       const encrypted = encryptId(id.toString());
       return encodeURIComponent(encrypted);
     } catch (error) {
-      console.error("Profile ID encryption failed:", error);
-      return id;
+      console.error("Product ID encryption failed:", error);
+      return id; // Fallback to unencrypted ID on error
     }
   };
 
   const handleToggle = (e) => {
-    e.stopPropagation();
+    e.stopPropagation(); // Prevent card click event from firing
     toggleBookmark({
       id,
       imageUrl,
@@ -77,17 +70,17 @@ export default function Cart({
   };
 
   const handleEditClick = (e) => {
-    e.stopPropagation();
+    e.stopPropagation(); // Prevent card click event from firing
     if (onEdit) {
       onEdit(id);
     } else {
-      router.push(`/edit-product/${id}`);
+      router.push(`/edit-product/${getEncrypted(id)}`);
     }
   };
 
   return (
     <div
-      className="flex flex-col bg-white rounded-2xl shadow-md overflow-hidden transition-transform w-full max-w-sm relative cursor-pointer"
+      className="flex flex-col bg-white rounded-2xl shadow-md overflow-hidden transition-transform w-full max-w-sm relative cursor-pointer hover:shadow-lg hover:-translate-y-1"
       onClick={handleCardClick}
     >
       <div className="relative w-full aspect-square">
@@ -97,6 +90,7 @@ export default function Cart({
           </div>
         )}
 
+        {/* This button will now correctly show only for the product owner */}
         {showEditButton && isOwner && (
           <button
             onClick={handleEditClick}

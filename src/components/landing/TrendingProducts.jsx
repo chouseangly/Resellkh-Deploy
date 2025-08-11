@@ -57,7 +57,7 @@ export default function TrendingNow() {
         }
     };
     
-    // ✨ FIX: Filter for trending items from the `products.content` array.
+    // Filter for trending items from the `products.content` array.
     const trendingItems = products && Array.isArray(products.content)
         ? products.content
               .filter((item) => item.productId >= 1 && item.productId <= 30)
@@ -125,7 +125,8 @@ export default function TrendingNow() {
                                 >
                                     <ProductCart
                                         id={item.productId}
-                                        imageUrl={item.fileUrls?.[0] || item.imageUrl || "/default-image.jpg"}
+                                        // ✨ FIX: Correctly access the image URL from the `media` array
+                                        imageUrl={item.media?.[0]?.fileUrl || "/default-image.jpg"}
                                         title={item.productName}
                                         description={item.description}
                                         price={price.toFixed(2)}

@@ -42,7 +42,8 @@ const fetcher = async (imgSrc) => {
       description: product.description,
       productPrice: product.productPrice,
       discountPercent: product.discountPercent,
-      imageUrl: product.fileUrls?.[0] || 'https://i0.wp.com/www.magetop.com/blog/wp-content/uploads/2021/06/How-To-Upload-Product-Image-Placeholder-In-Magento-2.png?resize=800%2C445&ssl=1',
+      // ✨ FIX: Correctly access the image URL from the 'media' array
+      imageUrl: product.media?.[0]?.fileUrl || 'https://i0.wp.com/www.magetop.com/blog/wp-content/uploads/2021/06/How-To-Upload-Product-Image-Placeholder-In-Magento-2.png?resize=800%2C445&ssl=1',
       condition: product.condition,
       location: product.location,
     }));
@@ -82,7 +83,7 @@ export default function ResultScanClient() {
     }
 
     if (error) {
-       return (
+        return (
         <div className="flex flex-col items-center justify-center text-center py-10 sm:py-16">
             <div className="mb-6 p-4 bg-gray-100 rounded-full">
                 <ArrowPathIcon />
@@ -105,7 +106,7 @@ export default function ResultScanClient() {
                 </button>
             </div>
         </div>
-       );
+        );
     }
     
     if (scanResults && scanResults.length > 0) {

@@ -114,7 +114,7 @@ export default function ResultSearchClient() {
                     <ProductCart
                       key={product.productId}
                       id={product.productId}
-                      imageUrl={product.fileUrls?.[0] || '/images/placeholder.jpg'}
+                      imageUrl={product.media?.[0]?.fileUrl || '/images/placeholder.jpg'}
                       title={product.productName}
                       description={product.description}
                       price={price.toFixed(2)}

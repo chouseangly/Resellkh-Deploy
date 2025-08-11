@@ -231,7 +231,8 @@ export default function ListingNearMeClient() {
 
     return {
       id: product.productId,
-      imageUrl: product.fileUrls?.[0] || "/images/placeholder.jpg",
+      // ✨ FIX: Correctly access the image URL from the 'media' array
+      imageUrl: product.media?.[0]?.fileUrl || "/images/placeholder.jpg",
       title: product.productName,
       description: product.description,
       price: price.toFixed(2),
@@ -285,7 +286,7 @@ export default function ListingNearMeClient() {
           className="mx-1"
           width="20"
           height="20"
-          viewBox="0 0 20 21"
+          viewBox="0 0 21"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >

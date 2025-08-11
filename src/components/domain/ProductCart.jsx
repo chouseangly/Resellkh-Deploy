@@ -1,4 +1,3 @@
-// src/components/domain/ProductCart.jsx
 "use client";
 
 import Image from "next/image";
@@ -56,56 +55,7 @@ export default function ProductCart({
         setTimeout(() => setIsAnimating(false), 300);
     };
 
-    // const handleAddToCart = async (e) => {
-    //     e.stopPropagation();
 
-    //     if (!session) {
-    //         toast("Please login to add items to cart", {});
-    //         router.push(`/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
-    //         return;
-    //     }
-
-    //     const token = localStorage.getItem("token");
-    //     if (!token) {
-    //         toast.error("Authentication token not found. Please log in.");
-    //         return;
-    //     }
-
-    //     const quantityToAdd = 1;
-    //     const apiUrl = `https://trivia-worlds-wichita-stan.trycloudflare.com/api/v1/cart/add?productId=${id}&quantity=${quantityToAdd}`;
-
-    //     // Optimistic UI update
-    //     const cartUpdatedEvent = new CustomEvent('cart-updated', {
-    //         detail: { type: 'increment', quantity: quantityToAdd }
-    //     });
-    //     window.dispatchEvent(cartUpdatedEvent);
-    //     toast.success("Added to cart!");
-
-    //     try {
-    //         const response = await fetch(apiUrl, {
-    //             method: 'POST',
-    //             headers: {
-    //                 'accept': '*/*',
-    //                 'Authorization': `Bearer ${token}`
-    //             },
-    //         });
-
-    //         if (!response.ok) {
-    //             throw new Error('Failed to add to cart.');
-    //         }
-    //         // Success is already handled optimistically.
-    //         // You could re-sync here if needed based on API response.
-
-    //     } catch (error) {
-    //         console.error("Error adding to cart:", error);
-    //         toast.error(error.message || "Failed to add product to cart.");
-    //         // Revert optimistic update on failure
-    //         const cartRevertEvent = new CustomEvent('cart-updated', {
-    //             detail: { type: 'decrement', quantity: quantityToAdd }
-    //         });
-    //         window.dispatchEvent(cartRevertEvent);
-    //     }
-    // };
 
     const encryptedProductId = encodeURIComponent(encryptId(id));
     const handleCardClick = () => {
@@ -142,7 +92,7 @@ export default function ProductCart({
                     onError={(e) => { e.currentTarget.src = 'https://placehold.co/400x300/e2e8f0/e2e8f0?text='; }}
                 />
 
-               
+                
             </div>
 
             {/* Card content area */}

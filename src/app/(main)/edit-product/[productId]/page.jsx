@@ -9,7 +9,7 @@ import ConditionSelector from "@/components/sell/ConditionSelector";
 import ItemDetailForm from "@/components/sell/ItemDetailForm";
 import DealMethod from "@/components/sell/DealMethod";
 import PricingInput from "@/components/sell/PricingInput";
-import { encryptId } from "@/utils/encryption";
+import { encryptId, decryptId } from "@/utils/encryption";
 import { deleteProduct } from "@/components/services/deleteProduct.service";
 import { updateProduct } from "@/components/services/updateProduct.service";
 import toast from "react-hot-toast";
@@ -28,37 +28,20 @@ const staticCategories = [
     { id: 10, name: "Other" },
 ];
 
-// Skeleton component for a better loading experience
 const EditPageSkeleton = () => (
     <div className="mx-auto px-[7%] py-8 animate-pulse">
         <div className="h-7 w-48 bg-gray-300 rounded-md mb-4"></div>
         <div className="flex flex-col md:flex-row gap-8">
-            {/* Left Column: Photo Uploader Skeleton */}
             <div className="flex-1 space-y-4">
                 <div className="h-80 w-full bg-gray-300 rounded-lg"></div>
             </div>
-            {/* Right Column: Form Fields Skeleton */}
             <div className="w-full md:w-1/2 space-y-8">
-                {/* Repeats for each form section */}
-                <div className="space-y-2">
-                    <div className="h-4 w-24 bg-gray-300 rounded"></div>
-                    <div className="h-10 w-full bg-gray-300 rounded-md"></div>
-                </div>
-                <div className="space-y-2">
-                    <div className="h-4 w-24 bg-gray-300 rounded"></div>
-                    <div className="h-10 w-full bg-gray-300 rounded-md"></div>
-                </div>
-                 <div className="space-y-2">
-                    <div className="h-4 w-20 bg-gray-300 rounded"></div>
-                    <div className="h-10 w-full bg-gray-300 rounded-md"></div>
-                </div>
-                 <div className="space-y-2">
-                    <div className="h-4 w-20 bg-gray-300 rounded"></div>
-                    <div className="h-24 w-full bg-gray-300 rounded-md"></div>
-                </div>
+                <div className="space-y-2"><div className="h-4 w-24 bg-gray-300 rounded"></div><div className="h-10 w-full bg-gray-300 rounded-md"></div></div>
+                <div className="space-y-2"><div className="h-4 w-24 bg-gray-300 rounded"></div><div className="h-10 w-full bg-gray-300 rounded-md"></div></div>
+                <div className="space-y-2"><div className="h-4 w-20 bg-gray-300 rounded"></div><div className="h-10 w-full bg-gray-300 rounded-md"></div></div>
+                <div className="space-y-2"><div className="h-4 w-20 bg-gray-300 rounded"></div><div className="h-24 w-full bg-gray-300 rounded-md"></div></div>
             </div>
         </div>
-        {/* Bottom Buttons Skeleton */}
         <div className="flex justify-between mt-8">
             <div className="h-10 w-24 bg-gray-300 rounded-full"></div>
             <div className="h-10 w-36 bg-gray-300 rounded-full"></div>
@@ -68,11 +51,12 @@ const EditPageSkeleton = () => (
 
 
 export default function EditProductPage({ params }) {
-    const { productId } = use(params);
+    const { productId: encryptedId } = use(params);
     const router = useRouter();
     const { data: session, status } = useSession();
     const dealMethodRef = useRef(null);
 
+    // Form state
     const [filesToSave, setFilesToSave] = useState([]);
     const [category, setCategory] = useState("");
     const [condition, setCondition] = useState("");
@@ -82,40 +66,51 @@ export default function EditProductPage({ params }) {
     const [telegram, setTelegram] = useState("");
     const [price, setPrice] = useState("");
     const [discount, setDiscount] = useState("");
-    const [latLng, setLatLng] = useState({ lat: null, lng: null });
     const [latitude, setLatitude] = useState(null);
     const [longitude, setLongitude] = useState(null);
+    const [originalProduct, setOriginalProduct] = useState(null);
+
+    // Control state
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingProduct, setIsLoadingProduct] = useState(true);
     const [error, setError] = useState(null);
-    const [originalProduct, setOriginalProduct] = useState(null);
     const [showDeletePopup, setShowDeletePopup] = useState(false);
+    
+    const decryptedId = useMemo(() => {
+        try {
+            return decryptId(decodeURIComponent(encryptedId));
+        } catch (e) {
+            console.error("Decryption failed:", e);
+            return null;
+        }
+    }, [encryptedId]);
+
 
     useEffect(() => {
         if (status === "unauthenticated") {
-            router.push("/login?redirect=/edit-product/" + productId);
+            router.push("/login?redirect=/edit-product/" + encryptedId);
         }
-    }, [status, router, productId]);
-
+    }, [status, router, encryptedId]);
+    
     const getEncrypted = (id) => {
-        try {
-            if (!id) return "";
-            return encodeURIComponent(encryptId(id.toString()));
-        } catch (error) {
-            console.error("Profile ID encryption failed:", error);
-            return "";
-        }
+      try {
+        if (!id) return "";
+        return encodeURIComponent(encryptId(id.toString()));
+      } catch (error) {
+        console.error("Profile ID encryption failed:", error);
+        return "";
+      }
     };
 
     useEffect(() => {
-        if (productId && status === "authenticated") {
+        if (decryptedId && status === "authenticated") {
             const fetchProductData = async () => {
+                setIsLoadingProduct(true);
+                setError(null);
                 try {
-                    // Set loading state to true
-                    setIsLoadingProduct(true);
                     const token = localStorage.getItem("token");
                     const response = await fetch(
-                        `${API_BASE_URL}/products/getproductbyuserid/${session.user.id}`,
+                        `${API_BASE_URL}/products/${decryptedId}`,
                         { headers: { Authorization: `Bearer ${token}` } }
                     );
 
@@ -124,13 +119,17 @@ export default function EditProductPage({ params }) {
                     }
 
                     const data = await response.json();
-                    const product = data.payload?.find((p) => p.productId === parseInt(productId));
                     
-                    if (!product) {
+                    const product = data.payload.content && Array.isArray(data.payload.content) 
+                        ? data.payload.content[0] 
+                        : data.payload;
+                    
+                    if (!product || Object.keys(product).length === 0) {
                         toast.error("Product not found.");
                         router.push("/");
                         return;
                     }
+
                     if (product.userId !== session.user.id) {
                         toast.error("You are not authorized to edit this product.");
                         router.push("/");
@@ -147,28 +146,30 @@ export default function EditProductPage({ params }) {
                     setCondition(product.condition || "");
                     setLatitude(product.latitude);
                     setLongitude(product.longitude);
-                    setLatLng({ lat: product.latitude, lng: product.longitude });
-
+                    
                     const cat = staticCategories.find((c) => c.id === product.mainCategoryId);
                     if (cat) setCategory(cat.name);
 
                 } catch (err) {
                     console.error("Fetch error:", err);
                     setError(err.message);
+                    toast.error("Failed to load product data.");
                 } finally {
-                    // Set loading state to false after fetch completes
                     setIsLoadingProduct(false);
                 }
             };
             fetchProductData();
+        } else if (status === "authenticated" && !decryptedId) {
+            toast.error("Invalid product ID.");
+            router.push("/");
         }
-    }, [productId, status, session, router]);
-
+    }, [decryptedId, status, session, router]);
+    
     const initialFiles = useMemo(() => {
-        if (originalProduct?.fileUrls?.length > 0) {
-            return originalProduct.fileUrls.map((url, index) => ({
+        if (originalProduct?.media?.length > 0) {
+            return originalProduct.media.map((mediaItem, index) => ({
                 id: `existing-${originalProduct.productId}-${index}`,
-                url: url,
+                url: mediaItem.fileUrl,
             }));
         }
         return [];
@@ -182,7 +183,7 @@ export default function EditProductPage({ params }) {
         setShowDeletePopup(false);
         setIsLoading(true);
         try {
-            await deleteProduct(productId, session.accessToken);
+            await deleteProduct(decryptedId, session.accessToken);
             toast.success("Product deleted successfully!");
             router.push(`/profile/${getEncrypted(session.user.id)}`);
         } catch (error) {
@@ -222,7 +223,7 @@ export default function EditProductPage({ params }) {
 
         try {
             const result = await updateProduct(
-                productId, 
+                decryptedId, 
                 productData, 
                 filesToSave, 
                 session.accessToken
@@ -247,12 +248,11 @@ export default function EditProductPage({ params }) {
     }
 
     if (error) {
-        return <div className="text-center p-8 text-red-500">Error: {error}</div>;
+        return <div className="text-center p-8 text-red-500">Error loading product: {error}</div>;
     }
 
     return (
         <div className="mx-auto px-[7%] py-8">
-            {/* --- Delete Confirmation Popup --- */}
             {showDeletePopup && (
                 <div
                     className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
@@ -267,19 +267,13 @@ export default function EditProductPage({ params }) {
                         </p>
                         <div className="flex justify-center gap-4">
                             <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleConfirmDelete();
-                                }}
+                                onClick={handleConfirmDelete}
                                 className="px-4 py-2 rounded-full bg-orange-500 text-white"
                             >
                                 Yes
                             </button>
                             <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowDeletePopup(false);
-                                }}
+                                onClick={() => setShowDeletePopup(false)}
                                 className="px-4 py-2 rounded-full bg-gray-400 text-white"
                             >
                                 No
@@ -293,10 +287,10 @@ export default function EditProductPage({ params }) {
             <div className="flex flex-col md:flex-row gap-8">
                 <div className="flex-1 space-y-4">
                     <EditPhotoUploader
-                        key={productId}
+                        key={decryptedId}
                         initialFiles={initialFiles}
                         onFilesChange={handleFilesChange}
-                        productId={productId}
+                        productId={decryptedId}
                     />
                 </div>
                 <div className="w-full md:w-1/2 space-y-6">
@@ -335,7 +329,7 @@ export default function EditProductPage({ params }) {
                     onClick={() => setShowDeletePopup(true)}
                     className="px-6 py-2 rounded-full text-white bg-red-500 hover:bg-red-600 disabled:bg-gray-400"
                 >
-                    {isLoading ? "Deleting..." : "Delete"}
+                    {isLoading ? "Please wait..." : "Delete"}
                 </button>
                 <button 
                     disabled={isLoading} 
