@@ -75,6 +75,10 @@ export default function EditProductPage({ params }) {
     const [isLoadingProduct, setIsLoadingProduct] = useState(true);
     const [error, setError] = useState(null);
     const [showDeletePopup, setShowDeletePopup] = useState(false);
+    // --- MODIFICATION START ---
+    // Added a dedicated loading state for the delete confirmation popup
+    const [isDeleting, setIsDeleting] = useState(false);
+    // --- MODIFICATION END ---
     
     const decryptedId = useMemo(() => {
         try {
@@ -179,9 +183,21 @@ export default function EditProductPage({ params }) {
         setFilesToSave(newFiles.filter(file => file instanceof File));
     }, []);
 
+    const handleMediaDeleted = useCallback((deletedUrl) => {
+        setOriginalProduct(prev => {
+            if (!prev) return null;
+            return {
+                ...prev,
+                media: prev.media.filter(mediaItem => mediaItem.fileUrl !== deletedUrl)
+            };
+        });
+    }, []);
+
+    // --- MODIFICATION START ---
+    // Updated the delete handler to use the new `isDeleting` state
     const handleConfirmDelete = async () => {
-        setShowDeletePopup(false);
         setIsLoading(true);
+        setIsDeleting(true); // Start popup loading state
         try {
             await deleteProduct(decryptedId, session.accessToken);
             toast.success("Product deleted successfully!");
@@ -190,8 +206,11 @@ export default function EditProductPage({ params }) {
             toast.error(`Delete failed: ${error.message}`);
         } finally {
             setIsLoading(false);
+            setIsDeleting(false); // Stop popup loading state
+            setShowDeletePopup(false); // Ensure popup closes
         }
     };
+    // --- MODIFICATION END ---
 
     const handleSaveEdit = async (e) => {
         e.preventDefault();
@@ -253,10 +272,12 @@ export default function EditProductPage({ params }) {
 
     return (
         <div className="mx-auto px-[7%] py-8">
+            {/* --- MODIFICATION START --- */}
+            {/* Updated popup JSX to reflect the `isDeleting` state */}
             {showDeletePopup && (
                 <div
                     className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
-                    onClick={() => setShowDeletePopup(false)}
+                    onClick={() => !isDeleting && setShowDeletePopup(false)}
                 >
                     <div
                         className="bg-white rounded-xl shadow-lg p-6 w-[90%] max-w-md text-center"
@@ -267,14 +288,16 @@ export default function EditProductPage({ params }) {
                         </p>
                         <div className="flex justify-center gap-4">
                             <button
+                                disabled={isDeleting}
                                 onClick={handleConfirmDelete}
-                                className="px-4 py-2 rounded-full bg-orange-500 text-white"
+                                className="px-4 py-2 w-24 rounded-full text-white transition bg-red-500 hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
                             >
-                                Yes
+                                {isDeleting ? "Deleting..." : "Yes"}
                             </button>
                             <button
+                                disabled={isDeleting}
                                 onClick={() => setShowDeletePopup(false)}
-                                className="px-4 py-2 rounded-full bg-gray-400 text-white"
+                                className="px-4 py-2 w-24 rounded-full bg-gray-300 text-gray-800 transition hover:bg-gray-400 disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed"
                             >
                                 No
                             </button>
@@ -282,6 +305,7 @@ export default function EditProductPage({ params }) {
                     </div>
                 </div>
             )}
+            {/* --- MODIFICATION END --- */}
             
             <h1 className="text-xl font-semibold text-gray-800 mb-4">Edit Product</h1>
             <div className="flex flex-col md:flex-row gap-8">
@@ -291,6 +315,8 @@ export default function EditProductPage({ params }) {
                         initialFiles={initialFiles}
                         onFilesChange={handleFilesChange}
                         productId={decryptedId}
+                        productName={originalProduct?.productName}
+                        onMediaDeleted={handleMediaDeleted}
                     />
                 </div>
                 <div className="w-full md:w-1/2 space-y-6">

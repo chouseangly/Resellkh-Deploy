@@ -13,7 +13,7 @@ const categories = [
   { id: 2, name: "Beauty", image: "/images/category/Beauty.png" },
   { id: 4, name: "Book", image: "/images/category/Book.png" },
   { id: 6, name: "Home", image: "/images/category/Home.png" },
-  { id: 7, name: "Sports & Kids", image: "/images/category/Sport.png" },
+  { id: 7, name: "Sports & Kids", image: "/images/category/sport.png" },
   { id: 8, name: "Electronic", image: "/images/category/Electronic.png" },
   { id: 9, name: "Vehicle", image: "/images/category/Bike.png" },
 ];

@@ -232,7 +232,7 @@ export default function ListingNearMeClient() {
     return {
       id: product.productId,
       // ✨ FIX: Correctly access the image URL from the 'media' array
-      imageUrl: product.media?.[0]?.fileUrl || "/images/placeholder.jpg",
+      imageUrl: product.media?.[0]?.fileUrl || "/images/product/product.png",
       title: product.productName,
       description: product.description,
       price: price.toFixed(2),

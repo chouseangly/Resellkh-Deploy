@@ -2,33 +2,47 @@
 
 import { useState, useEffect } from "react";
 import { FaStar } from "react-icons/fa";
-import Image from "next/image";
+import Image from "next/image"; // Make sure Image is imported from 'next/image'
 
-const ReviewsSection = ({ setActiveTab, sellerId }) => {
+const ReviewsSection = ({ sellerId, sellerName }) => { // Added sellerName prop
   const [isOpen, setIsOpen] = useState(false);
   const [sortOrder, setSortOrder] = useState("Newest");
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [visibleCount, setVisibleCount] = useState(3);
-  const [loadingMore, setLoadingMore] = useState(false); // --- 1. Add loadingMore state ---
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const [loadingMore, setLoadingMore] = useState(false);
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    // This check is important to avoid errors on the server-side
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+    if (!sellerId) {
+        setLoading(false);
+        setError("Seller ID is not provided.");
+        return;
+    }
 
     const fetchReviews = async () => {
       try {
+        const headers = {
+          "Accept": "application/json",
+        };
+        // Only add the Authorization header if a token exists
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+        
         const response = await fetch(
           `${API_BASE_URL}/ratings/${sellerId}`,
-          {
-            headers: {
-              Accept: "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          { headers }
         );
 
-        if (!response.ok) throw new Error("Failed to fetch reviews");
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to fetch reviews");
+        }
 
         const data = await response.json();
         setReviews(data.payload || []);
@@ -48,14 +62,13 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
     return sortOrder === "Newest" ? dateB - dateA : dateA - dateB;
   });
 
-  // --- 2. Update the handleViewMore function ---
   const handleViewMore = () => {
     setLoadingMore(true);
-    // Simulate a delay for fetching more reviews
+    // Simulate a delay for a better user experience
     setTimeout(() => {
       setVisibleCount((prev) => prev + 3);
       setLoadingMore(false);
-    }, 500); // 500ms delay
+    }, 500);
   };
 
   const averageRating =
@@ -190,19 +203,24 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
         {reviews.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-6 text-center">
-            <img
+            {/* FIX: Replaced <img> with <Image> and added required props */}
+            <Image
               src="/images/story set/amico.jpg"
               alt="No reviews"
+              width={300} // Added width
+              height={300} // Added height for a 1:1 aspect ratio
               className="w-[300px] h-auto mb-4"
+              priority // Add priority if this is an important image
             />
             <p className="text-sm font-medium text-gray-800 mb-1">
-              <span className="font-semibold">@leackhena12_Q</span> has no
+              {/* FIX: Replaced hardcoded name with dynamic prop */}
+              <span className="font-semibold">@{sellerName || 'This seller'}</span> has no
               reviews yet.
             </p>
             <p className="text-sm text-gray-500 max-w-xs">
               Reviews are given when a buyer or seller completes a deal. Contact{" "}
               <span className="font-medium text-gray-700">
-                @leackhena12_Q
+                @{sellerName || 'this seller'}
               </span>{" "}
               to find out more!
             </p>
@@ -214,14 +232,17 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
                 <div key={review.ratingId} className="flex space-x-4 pb-4">
                   <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
                     {review.reviewerAvatar ? (
+                      // FIX: Added width and height props to the Image component
                       <Image
                         src={review.reviewerAvatar}
                         alt={review.reviewerName || "Anonymous"}
+                        width={48}
+                        height={48}
                         className="w-full h-full object-cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-xl text-white bg-gray-400">
-                        {(review.reviewerName || "A").charAt(0)}
+                        {(review.reviewerName || "A").charAt(0).toUpperCase()}
                       </div>
                     )}
                   </div>
@@ -263,19 +284,18 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
               ))}
             </div>
             
-            {/* --- 3. Update the button's JSX --- */}
             {visibleCount < sortedReviews.length && (
               <div className="flex justify-center mt-4">
                 <button
                   onClick={handleViewMore}
-                  disabled={loadingMore} // Disable button when loading
+                  disabled={loadingMore}
                   className="bg-orange-500 hover:bg-orange-600 text-white text-md font-medium px-4 py-2 rounded-full transition-colors duration-200 flex items-center justify-center w-32"
                 >
                   {loadingMore ? (
-                     <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
-                  Loading...
-                    </>
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
+                        Loading...
+                      </>
                   ) : (
                     "View more"
                   )}

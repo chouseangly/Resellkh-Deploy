@@ -6,26 +6,23 @@ import { useRouter } from 'next/navigation';
 import { FaStar } from 'react-icons/fa';
 import { encryptId } from '@/utils/encryption';
 
-
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-export default function SellerInfo({ sellerId }) {
+
+export default function SellerInfo({ sellerId, ratingData }) {
   const [user, setUser] = useState(null);
-  const [ratingData, setRatingData] = useState(null);
   const router = useRouter();
 
-  // 1. SAFE ENCRYPTION FUNCTION (WON'T RANDOMLY FAIL)
   const getEncryptedId = (id) => {
     try {
       if (!id) return '';
       const encrypted = encryptId(id.toString());
-      return encodeURIComponent(encrypted); // URL-safe encoding
+      return encodeURIComponent(encrypted);
     } catch (error) {
       console.error('Encryption failed, using fallback:', error);
-      return id; // Fallback to original ID if encryption fails
+      return id;
     }
   };
 
-  // 2. PROFILE CLICK HANDLER WITH RELIABLE ENCRYPTION
   const handleProfileClick = () => {
     const token = localStorage.getItem('token');
     const encryptedId = getEncryptedId(sellerId);
@@ -37,11 +34,10 @@ export default function SellerInfo({ sellerId }) {
     }
   };
 
-  // [Keep all your existing useEffect for data fetching]
   useEffect(() => {
     if (!sellerId) return;
 
-    const fetchProfileAndRating = async () => {
+    const fetchProfile = async () => {
       try {
         const tokenFromStorage = localStorage.getItem("token");
         const headers = {
@@ -49,37 +45,24 @@ export default function SellerInfo({ sellerId }) {
           ...(tokenFromStorage ? { Authorization: `Bearer ${tokenFromStorage}` } : {}),
         };
 
-        const [profileRes, ratingRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/profile/${sellerId}`, { 
-            method: 'GET', 
-            headers 
-          }),
-          fetch(`${API_BASE_URL}/ratings/summary/${sellerId}`, { 
-            method: 'GET', 
-            headers 
-          })
-        ]);
+        const profileRes = await fetch(`${API_BASE_URL}/profile/${sellerId}`, { 
+          method: 'GET', 
+          headers 
+        });
 
         if (profileRes.ok) {
           const profileData = await profileRes.json();
           setUser(profileData.payload || null);
         }
-
-        if (ratingRes.ok) {
-          const ratingSummary = await ratingRes.json();
-          setRatingData(ratingSummary.payload || null);
-        }
       } catch (err) {
         console.error('Fetch error:', err);
         setUser(null);
-        setRatingData(null);
       }
     };
 
-    fetchProfileAndRating();
+    fetchProfile();
   }, [sellerId]);
 
-  // [Keep all your existing UI rendering]
   if (!user) {
     return <div className="text-gray-500">Loading seller info...</div>;
   }
@@ -96,7 +79,7 @@ export default function SellerInfo({ sellerId }) {
       >
         <div className="w-12 h-12 bg-gray-300 rounded-full overflow-hidden">
           <Image
-            src={user.profileImage || 'https://gateway.pinata.cloud/ipfs/QmYkedcDzkvyCZbPtzmztQZ7uANVYFiqBXTJbERsJyfcQm'}
+            src={user.profileImage || '/images/profile/profile.png'}
             alt="Seller"
             width={48}
             height={48}

@@ -64,7 +64,7 @@ export default function ForgotPassword() {
       {/* Right Form */}
       <div className="w-full lg:w-1/2 max-w-md space-y-6">
         <div className="flex justify-center mb-12">
-          <img src="/images/auth/logo.jpg" alt="logo" className="w-[130px]" />
+          <img src="/images/auth/logo1.png" alt="logo" className="w-[130px]" />
         </div>
 
         <div className="text-center lg:text-left">

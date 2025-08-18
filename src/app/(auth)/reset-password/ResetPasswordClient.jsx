@@ -98,7 +98,7 @@ export default function ResetPasswordClient() {
         {/* Right Form */}
         <div className="w-full md:w-1/2 max-w-md space-y-6">
           <div className="flex justify-center mb-8">
-            <img src="/images/auth/logo.jpg" alt="logo" className="w-[130px]" />
+            <img src="/images/auth/logo1.png" alt="logo" className="w-[130px]" />
           </div>
           <div>
             <h2 className="text-xl font-semibold text-left">Create new Password</h2>

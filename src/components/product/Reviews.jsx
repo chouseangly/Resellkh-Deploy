@@ -5,7 +5,9 @@ import Image from "next/image";
 import { FaStar } from "react-icons/fa";
 import { ReviewFormModal } from "@/components/product/ReviewFormModal";
 import { useRouter } from "next/navigation";
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 const SkeletonCard = () => (
   <div className="flex space-x-4 pb-6 animate-pulse">
     <div className="w-12 h-12 bg-gray-300 rounded-full" />
@@ -17,15 +19,13 @@ const SkeletonCard = () => (
   </div>
 );
 
-export default function Reviews({ sellerId }) {
+export default function Reviews({ sellerId, onReviewSubmitted }) {
   const router = useRouter();
-
   const [reviews, setReviews] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAll, setShowAll] = useState(false);
-
   const [userId, setUserId] = useState(null);
   const [token, setToken] = useState(null);
 
@@ -47,34 +47,23 @@ export default function Reviews({ sellerId }) {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(
-          `${API_BASE_URL}/ratings/${sellerId}`,
-          {
-            headers: {
-              Accept: "application/json",
-            },
-          }
-        );
-
+        const res = await fetch(`${API_BASE_URL}/ratings/${sellerId}`, {
+          headers: { Accept: "application/json" },
+        });
         if (!res.ok) {
           throw new Error(`Failed to fetch reviews: ${res.status} ${res.statusText}`);
         }
-
         const data = await res.json();
-
         if (data?.payload) {
           const mappedReviews = data.payload.map((r) => ({
             name: r.reviewerName || "User",
             date: new Date(r.createdAt).toLocaleDateString(undefined, {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
+              year: "numeric", month: "short", day: "numeric",
             }),
             rating: r.score || 0,
             comment: r.comment || "",
             userAvatar: r.reviewerAvatar,
           }));
-
           setReviews(mappedReviews);
         } else {
           setReviews([]);
@@ -87,7 +76,7 @@ export default function Reviews({ sellerId }) {
       }
     };
     fetchReviews();
-  }, [sellerId, token]);
+  }, [sellerId]);
 
   const handleReviewSubmit = async ({ score, comment }) => {
     try {
@@ -95,7 +84,6 @@ export default function Reviews({ sellerId }) {
         alert("You must be logged in to submit a review.");
         return;
       }
-
       const res = await fetch(`${API_BASE_URL}/ratings`, {
         method: "POST",
         headers: {
@@ -110,25 +98,22 @@ export default function Reviews({ sellerId }) {
           createdAt: new Date().toISOString(),
         }),
       });
-
       if (!res.ok) throw new Error("Failed to submit review");
-
       const result = await res.json();
-
       const newReview = {
         name: result.payload.reviewerName || "User",
         date: new Date(result.payload.createdAt).toLocaleDateString(undefined, {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
+          year: "numeric", month: "short", day: "numeric",
         }),
         rating: result.payload.score || 0,
         comment: result.payload.comment || "",
         userAvatar: result.payload.reviewerAvatar || "/images/profile/profile.png",
       };
-
       setReviews((prev) => [newReview, ...prev]);
       setShowAll(true);
+      if (onReviewSubmitted) {
+        onReviewSubmitted();
+      }
     } catch (error) {
       console.error(error);
       alert("Error submitting review");
@@ -147,7 +132,6 @@ export default function Reviews({ sellerId }) {
 
   return (
     <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm w-full">
-      {/* Header */}
       <div className="flex flex-row sm:flex-row sm:items-center sm:justify-between gap-12 mb-6">
         <h3 className="font-bold text-gray-900 text-base sm:text-lg mt-2">Reviews for Seller</h3>
         <button
@@ -164,7 +148,6 @@ export default function Reviews({ sellerId }) {
         </button>
       </div>
 
-      {/* Content */}
       {loading ? (
         <div className="space-y-6">
           {[...Array(3)].map((_, idx) => <SkeletonCard key={idx} />)}
@@ -212,8 +195,6 @@ export default function Reviews({ sellerId }) {
               </div>
             ))}
           </div>
-
-          {/* Toggle button */}
           {reviews.length > 3 && (
             <div className="text-center mt-4">
               <button

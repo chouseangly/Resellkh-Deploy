@@ -1,10 +1,10 @@
+// src/components/services/getProductIdByNotId.service.js
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export const getProductIdByNotificationId = async (notificationId, token) => {
-  // Renamed parameters and function for clarity
   try {
     const response = await fetch(
-      `${API_BASE_URL}/notifications/getproductidbynotid/${notificationId}`, // Use notificationId here
+      `${API_BASE_URL}/notifications/getproductidbynotid/${notificationId}`,
       {
         method: "GET",
         headers: {
@@ -34,10 +34,10 @@ export const getProductIdByNotificationId = async (notificationId, token) => {
     }
 
     const data = await response.json();
-    // Here, `data` is the number (product ID), so just return it
-    return data;
+    // FIX: Extract the product ID from the 'payload' property
+    return data.payload;
   } catch (error) {
-    console.error("Error fetching product ID by notification ID:", error); // Updated error message
+    console.error("Error fetching product ID by notification ID:", error);
     throw error;
   }
 };

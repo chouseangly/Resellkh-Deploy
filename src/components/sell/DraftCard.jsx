@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react'; // Import useState
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
@@ -11,6 +11,10 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export default function DraftCard({ draft, onDelete, token }) {
   // State to control the visibility of the confirmation popup
   const [showPopup, setShowPopup] = useState(false);
+  // --- MODIFICATION START ---
+  // Added a dedicated loading state for the delete action
+  const [isDeleting, setIsDeleting] = useState(false);
+  // --- MODIFICATION END ---
 
   const imageUrl = draft.fileUrls?.[0] || 'https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png';
   const draftId = draft.draftId ?? null;
@@ -27,7 +31,8 @@ export default function DraftCard({ draft, onDelete, token }) {
     setShowPopup(true);
   };
 
-  // This function contains the actual deletion logic
+  // --- MODIFICATION START ---
+  // This function now handles the loading state during deletion
   const confirmDeleteHandler = async () => {
     if (!draftId || !userId) return;
 
@@ -36,6 +41,8 @@ export default function DraftCard({ draft, onDelete, token }) {
       setShowPopup(false);
       return;
     }
+    
+    setIsDeleting(true); // Start loading
 
     try {
       const res = await fetch(
@@ -67,12 +74,16 @@ export default function DraftCard({ draft, onDelete, token }) {
       console.error('Delete error:', error);
       toast.error('Something went wrong while trying to delete the draft.');
     } finally {
-      // Close the popup regardless of outcome
+      // Close the popup and reset loading state
       setShowPopup(false);
+      setIsDeleting(false);
     }
   };
+  // --- MODIFICATION END ---
 
   const cancelDelete = () => {
+    // Prevent closing if it's already in the process of deleting
+    if (isDeleting) return;
     setShowPopup(false);
   };
 
@@ -117,7 +128,8 @@ export default function DraftCard({ draft, onDelete, token }) {
         </div>
       </div>
 
-      {/* Confirmation Popup */}
+      {/* --- MODIFICATION START --- */}
+      {/* Updated popup to reflect the `isDeleting` loading state */}
       {showPopup && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
@@ -133,13 +145,15 @@ export default function DraftCard({ draft, onDelete, token }) {
             <div className="flex justify-center gap-4">
               <button
                 onClick={confirmDeleteHandler}
-                className="px-6 py-2 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-semibold"
+                disabled={isDeleting}
+                className="px-6 py-2 w-28 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-semibold transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                Yes
+                {isDeleting ? 'Deleting...' : 'Yes'}
               </button>
               <button
                 onClick={cancelDelete}
-                className="px-6 py-2 rounded-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold"
+                disabled={isDeleting}
+                className="px-6 py-2 w-28 rounded-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -147,6 +161,7 @@ export default function DraftCard({ draft, onDelete, token }) {
           </div>
         </div>
       )}
+      {/* --- MODIFICATION END --- */}
     </>
   );
 }

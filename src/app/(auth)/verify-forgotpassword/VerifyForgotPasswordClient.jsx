@@ -130,6 +130,10 @@ export default function VerifyForgotPasswordClient() {
 
       {/* OTP Form */}
       <div className="w-full lg:w-1/2 max-w-md text-center space-y-6">
+        <div className="mx-auto flex items-center justify-center">
+          {/* Icon SVG */}
+           <img src="/images/auth/logo1.png" alt="logo" className="w-[130px]" />
+        </div>
         <h2 className="text-2xl font-bold">OTP Verification</h2>
         <p className="text-gray-600 text-sm">
           Enter the OTP sent to{" "}

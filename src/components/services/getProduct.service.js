@@ -8,11 +8,7 @@ export const getProductById = async (productId) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      // FIX: Add caching configuration.
-      // This tells Next.js to cache the result of this fetch for 3600 seconds (1 hour).
-      next: {
-        revalidate: 3600,
-      },
+   
     });
 
     if (!response.ok) {

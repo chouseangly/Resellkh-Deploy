@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ProductGallery from '@/components/product/ProductGallery';
 import ProductDetails from '@/components/product/ProductDetails';
@@ -9,15 +10,42 @@ import MoreFromSeller from '@/components/product/MoreFromSeller';
 import OtherProducts from '@/components/product/OtherProducts';
 import ContactSellerHeader from '@/components/product/ContactSellerHeader';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 export default function ProductPageClient({ productData }) {
-  // If for some reason productData is not available, show a message.
+  const [ratingData, setRatingData] = useState(null);
+
+  const fetchRatingData = async () => {
+    if (!productData?.userId) return;
+    try {
+      const tokenFromStorage = localStorage.getItem("token");
+      const headers = {
+        Accept: '*/*',
+        ...(tokenFromStorage ? { Authorization: `Bearer ${tokenFromStorage}` } : {}),
+      };
+      const ratingRes = await fetch(`${API_BASE_URL}/ratings/summary/${productData.userId}`, {
+        method: 'GET',
+        headers
+      });
+      if (ratingRes.ok) {
+        const ratingSummary = await ratingRes.json();
+        setRatingData(ratingSummary.payload || null);
+      }
+    } catch (err) {
+      console.error('Fetch rating error:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchRatingData();
+  }, [productData?.userId]);
+
   if (!productData) {
     return <div className="text-center py-20 text-gray-500">Product data is not available.</div>;
   }
 
   return (
     <div className="mx-auto px-4 sm:px-6 lg:px-20 py-6 bg-white text-black max-w-screen-2xl">
-      {/* Breadcrumb */}
       <div className="flex items-center text-gray-500 mb-6 text-sm sm:text-base">
         <Link href="/" className="hover:text-black">Home</Link>
         <svg className="mx-2" width="16" height="16" viewBox="0 0 20 21" fill="none">
@@ -31,7 +59,6 @@ export default function ProductPageClient({ productData }) {
         <span className="text-orange-500">Detail</span>
       </div>
 
-      {/* Product Gallery and Details */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 mb-10">
         <ProductGallery product={productData} />
         <ProductDetails product={productData} />
@@ -39,15 +66,14 @@ export default function ProductPageClient({ productData }) {
 
       <ContactSellerHeader />
 
-      {/* Seller Info and Reviews */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
         <div className="lg:col-span-1">
-          <SellerInfo sellerId={productData.userId} />
+          <SellerInfo sellerId={productData.userId} ratingData={ratingData} />
         </div>
         <div className="lg:col-span-2">
           <Reviews
             sellerId={productData.userId}
-            productId={productData.productId}
+            onReviewSubmitted={fetchRatingData}
           />
         </div>
       </div>

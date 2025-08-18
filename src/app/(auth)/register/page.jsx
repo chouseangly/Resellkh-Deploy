@@ -118,7 +118,7 @@ export default function Register() {
 
       <div className="w-full lg:w-1/2 max-w-md py-8 space-y-4">
         <div className="flex justify-center mb-2">
-          <img src="/images/auth/logo.jpg" alt="logo" className="w-[130px]" />
+          <img src="/images/auth/logo1.png" alt="logo" className="w-[130px]" />
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">

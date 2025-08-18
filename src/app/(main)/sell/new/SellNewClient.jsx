@@ -16,7 +16,6 @@ import axios from "axios";
 import { getUploadedFiles } from "@/utils/fileStore";
 import { eventService } from "@/components/services/even.service";
 
-
 const staticCategories = [
   { id: 1, name: "Accessories" },
   { id: 2, name: "Beauty" },
@@ -54,7 +53,12 @@ export const SellNewClient = () => {
   const [navigationTarget, setNavigationTarget] = useState(null);
   const isNavigatingRef = useRef(false);
   const [userDrafts, setUserDrafts] = useState([]);
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  // --- MODIFICATION START ---
+  // Added a dedicated loading state for the draft saving popup
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  // --- MODIFICATION END ---
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
   useEffect(() => {
     if (!draftId) {
       const initialFiles = getUploadedFiles();
@@ -173,13 +177,11 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
       if (draftId) {
         const formData = new FormData();
-        // Append all keys except 'files'
         Object.keys(productData).forEach((key) => {
           if (key !== "files") {
             formData.append(key, productData[key]);
           }
         });
-        // Append only new files (File objects)
         productData.files.forEach((file) => {
           if (file instanceof File) {
             formData.append("files", file);
@@ -198,16 +200,14 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
         );
         toast.success("Item published successfully!");
       } else {
-        // Use the corrected postProduct service for new items
         await postProduct(productData);
         toast.success("Item listed successfully!");
       }
-      
-      eventService.dispatch('productAdded');
+
+      eventService.dispatch("productAdded");
 
       const encryptedId = encodeURIComponent(encryptId(session.user.id));
       router.push(`/profile/${encryptedId}`);
-
     } catch (error) {
       console.error("Submit error:", error);
       const errorMessage =
@@ -219,9 +219,6 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
       setIsLoading(false);
     }
   };
-  
-  // The rest of your functions (handleSaveDraft, etc.) and JSX remain unchanged.
-  // No changes are needed below this line.
 
   useEffect(() => {
     const fetchAllUserDrafts = async () => {
@@ -319,7 +316,10 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
       toast.error("You must be logged in to save a draft.");
       return;
     }
-    setIsLoading(true);
+    // --- MODIFICATION START ---
+    // Use the dedicated state for the popup action
+    setIsSavingDraft(true);
+    // --- MODIFICATION END ---
     try {
       const selectedCategory = staticCategories.find(
         (cat) => cat.name === category
@@ -404,8 +404,11 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
         "Failed to save draft. Please try again.";
       toast.error(msg);
     } finally {
-      setIsLoading(false);
+      // --- MODIFICATION START ---
+      // Reset the dedicated loading state and navigate
+      setIsSavingDraft(false);
       proceedNavigation();
+      // --- MODIFICATION END ---
     }
   };
 
@@ -492,6 +495,8 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
         </div>
       </div>
 
+      {/* --- MODIFICATION START --- */}
+      {/* Updated popup JSX to reflect the isSavingDraft state */}
       {showPopup && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
@@ -503,20 +508,26 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
             </p>
             <div className="flex justify-center gap-4">
               <button
+                disabled={isSavingDraft}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleSaveDraft();
                 }}
-                className="px-4 py-2 rounded-full bg-orange-500 text-white"
+                className={`px-4 py-2 w-24 rounded-full text-white transition ${
+                  isSavingDraft
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-orange-500 hover:bg-orange-600"
+                }`}
               >
-                Yes
+                {isSavingDraft ? "Saving..." : "Yes"}
               </button>
               <button
+                disabled={isSavingDraft}
                 onClick={(e) => {
                   e.stopPropagation();
                   discardAndLeave();
                 }}
-                className="px-4 py-2 rounded-full bg-gray-400 text-white"
+                className="px-4 py-2 w-24 rounded-full bg-gray-300 text-gray-800 transition hover:bg-gray-400 disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed"
               >
                 No
               </button>
@@ -524,6 +535,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
           </div>
         </div>
       )}
+      {/* --- MODIFICATION END --- */}
     </div>
   );
 };

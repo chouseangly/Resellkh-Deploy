@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 /**
@@ -20,13 +20,16 @@ const SkeletonBox = ({ className }) => (
 );
 
 const ProductGallery = ({ product }) => {
-  // SIMPLIFIED: We now get media items directly from product.media
-  // Each item is an object: { fileUrl: '...', contentType: '...' }
   const mediaItems = product?.media ?? [];
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  // REMOVED: No more need for mediaTypes or isLoadingTypes state
-  // REMOVED: The entire useEffect for fetching headers is gone, making the component faster.
+  // This useEffect ensures that if an image is deleted and the list of mediaItems changes,
+  // the selectedIndex doesn't point to an item that no longer exists.
+  useEffect(() => {
+    if (selectedIndex >= mediaItems.length) {
+      setSelectedIndex(0);
+    }
+  }, [mediaItems, selectedIndex]);
 
   // Skeleton for when the product data itself is not yet loaded.
   if (!product) {
@@ -47,14 +50,15 @@ const ProductGallery = ({ product }) => {
   return (
     <div className="flex flex-row gap-3 w-full max-w-full overflow-hidden">
       {/* Thumbnails - vertical layout */}
-      <div className="flex flex-col ps-[1px] pt-[1px] gap-[5px] max-h-[390px] sm:max-h-[550px] no-scrollbar ">
+      <div className="flex flex-col ps-[1px] pt-[1px] gap-[5px] max-h-[390px] sm:max-h-[550px]  no-scrollbar ">
         {mediaItems.map((item, index) => {
-          // SIMPLIFIED: We check the contentType string directly.
-          const isVideo = item.contentType.startsWith('video');
+          // FIX: Safely check for contentType before calling .startsWith()
+          // This prevents the "Cannot read properties of null" error.
+          const isVideo = item.contentType?.startsWith('video') ?? false;
 
           return (
             <button
-              key={item.fileUrl} // The URL is a great unique key
+              key={item.fileUrl || `media-${index}`} // Use index as a fallback key
               onClick={() => setSelectedIndex(index)}
               aria-current={selectedIndex === index ? 'true' : undefined}
               className={`relative w-[74px] h-[64px] sm:w-[94px] sm:h-[94px] rounded-lg overflow-hidden border transition-all flex-shrink-0 ${
@@ -65,14 +69,14 @@ const ProductGallery = ({ product }) => {
             >
               {isVideo ? (
                 <video
-                  src={item.fileUrl} // Use the fileUrl from the item object
+                  src={item.fileUrl}
                   muted
                   preload="metadata"
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <Image
-                  src={item.fileUrl} // Use the fileUrl from the item object
+                  src={item.fileUrl}
                   alt={`Thumbnail ${index + 1}`}
                   width={94}
                   height={94}
@@ -95,10 +99,11 @@ const ProductGallery = ({ product }) => {
 
       {/* Main Media Display */}
       <div className="flex-grow w-full h-[300px] sm:h-[400px] rounded-lg overflow-hidden border border-gray-200 relative">
-        {mediaItems.length > 0 ? (
+        {mediaItems.length > 0 && mediaItems[selectedIndex] ? (
           (() => {
             const selectedItem = mediaItems[selectedIndex];
-            const isVideo = selectedItem.contentType.startsWith('video');
+            // FIX: Also apply the safe check here for the main display
+            const isVideo = selectedItem.contentType?.startsWith('video') ?? false;
             
             return isVideo ? (
               <video
@@ -127,7 +132,6 @@ const ProductGallery = ({ product }) => {
         ) : (
           // Placeholder for products with no media
           <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-            {/* You can put a placeholder image component here if you want */}
             <span className="text-gray-500">No media available</span>
           </div>
         )}

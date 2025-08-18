@@ -18,8 +18,8 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-[#f1edef] text-gray-800 py-8 sm:py-10 px-4 sm:px-6 md:px-8 lg:px-20">
-      <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8 md:gap-10">
+    <footer className="bg-[#f1edef] text-gray-800 py-8 sm:py-10 px-4 sm:px-6 md:px-8 lg:px-8">
+      <div className="w-full mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8 md:gap-10">
         {/* Logo + Description */}
         <div className="col-span-2 md:col-span-1">
           <div className="flex items-center gap-2 mb-3 sm:mb-4">
@@ -40,21 +40,21 @@ export default function Footer() {
           {/* Social Icons */}
           <div className="flex gap-3 sm:gap-4 mt-3 sm:mt-4 text-lg sm:text-xl text-gray-700">
             <a 
-              href="#" 
+              href="https://web.facebook.com/profile.php?id=61578988574380" 
               aria-label="Facebook" 
               className="hover:text-orange-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 rounded-full p-1"
             >
               <FaFacebook />
             </a>
             <a 
-              href="#" 
+              href="https://www.tiktok.com/@resellkh" 
               aria-label="TikTok" 
               className="hover:text-orange-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 rounded-full p-1"
             >
               <FaTiktok />
             </a>
             <a 
-              href="#" 
+              href="https://t.me/resell_second_hand" 
               aria-label="Telegram" 
               className="hover:text-orange-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 rounded-full p-1"
             >

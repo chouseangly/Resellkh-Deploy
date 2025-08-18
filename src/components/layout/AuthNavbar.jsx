@@ -202,7 +202,7 @@ export default function AuthNavbar() {
 
   return (
     <div className="w-full sticky top-0 z-[200] bg-white shadow-sm">
-      <div className="px-4 sm:px-6 lg:px-8 py-3 border-b border-gray-100">
+      <div className="px-4 sm:px-6 lg:px-8 py-3 ">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <Link href="/">

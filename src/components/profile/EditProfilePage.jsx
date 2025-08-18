@@ -115,7 +115,7 @@ export default function EditProfilePage({ sellerId }) {
           });
           setSelectedImage(
             p.profileImage ||
-              "/images/profile/profile.jpg"
+              "/images/profile/profile.png"
           );
           setSelectedCoverImage(p.coverImage || "/cover1.jpg");
         } else {
@@ -500,7 +500,7 @@ export default function EditProfilePage({ sellerId }) {
               {/* Fixed circular profile image container */}
               <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gray-100">
                 <Image
-                  src={selectedImage}
+                  src={selectedImage || "/images/profile/profile.png"}
                   alt="avatar"
                   width={144}
                   height={144}

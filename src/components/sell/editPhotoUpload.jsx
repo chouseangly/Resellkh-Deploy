@@ -4,7 +4,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
+import { deleteProductImageAction } from '@/lib/actions';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 async function getMediaTypeFromUrl(url) {
     try {
         const response = await fetch(url, { method: 'HEAD' });
@@ -85,8 +88,8 @@ const processFile = async (file, index, existingItems = []) => {
     return null;
 };
 
-// This signature correctly accepts the 'productId' prop
-export default function EditPhotoUploader({ initialFiles = [], onFilesChange, productId }) {
+
+export default function EditPhotoUploader({ initialFiles = [], onFilesChange, productId, productName, onMediaDeleted }) {
     const { data: session } = useSession();
     const [mediaItems, setMediaItems] = useState([]);
     const [isDragging, setIsDragging] = useState(false);
@@ -191,8 +194,8 @@ export default function EditPhotoUploader({ initialFiles = [], onFilesChange, pr
         const isExistingFile = !itemToRemove.previewUrl.startsWith('blob:') && !(itemToRemove.fileObject instanceof File);
 
         if (isExistingFile) {
-            if (!productId) {
-                toast.error("Product ID is missing. Cannot delete file.");
+            if (!productId || !productName) {
+                toast.error("Product identifiers are missing. Cannot delete file.");
                 return;
             }
             try {
@@ -202,30 +205,33 @@ export default function EditPhotoUploader({ initialFiles = [], onFilesChange, pr
                     return;
                 }
 
-                const response = await fetch(
-                    `${API_BASE_URL}/products/${productId}/files?fileUrl=${encodeURIComponent(itemToRemove.previewUrl)}`,
-                    {
-                        method: 'DELETE',
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    }
-                );
+                // Call the server action
+                const result = await deleteProductImageAction({
+                    productId,
+                    fileUrl: itemToRemove.previewUrl,
+                    productName,
+                    token
+                });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || "Failed to delete file.");
+                if (!result.success) {
+                    throw new Error(result.message);
                 }
 
-                toast.success("Media deleted successfully!");
+                toast.success(result.message);
+                
+                // This updates the gallery on the current (edit) page
+                if(onMediaDeleted) {
+                    onMediaDeleted(itemToRemove.previewUrl);
+                }
 
             } catch (error) {
                 toast.error(`Deletion failed: ${error.message}`);
                 console.error("Error deleting file:", error);
-                return;
+                return; 
             }
         }
         
+        // This part removes newly added files from the UI
         setMediaItems(prevItems => {
             const updated = prevItems.filter(item => item.id !== idToRemove);
             if (itemToRemove.previewUrl?.startsWith('blob:')) {
@@ -234,7 +240,7 @@ export default function EditPhotoUploader({ initialFiles = [], onFilesChange, pr
             return updated;
         });
 
-    }, [mediaItems, session, productId]);
+    }, [mediaItems, session, productId, productName, onMediaDeleted]);
 
     const moveToFirst = useCallback((idToMove) => {
         setMediaItems(prevItems => {
