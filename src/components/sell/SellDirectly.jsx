@@ -6,37 +6,37 @@ const directSellCategories = [
   {
     name: "Men’s & Women’s Fashion",
     description: "clean out your closet",
-    icon: "/sell/fashion.png",
+    icon: "/Sell/fashion.png",
     href: "#",
   },
   {
     name: "Accessories Women Luxury",
     description: "beauty",
-    icon: "/sell/beauty.png",
+    icon: "/Sell/beauty.png",
     href: "#",
   },
   {
     name: "Decathlon bicycles",
     description: "instant quotest",
-    icon: "/sell/bicycle.png",
+    icon: "/Sell/bicycle.png",
     href: "#",
   },
   {
     name: "Book",
     description: "grow smart",
-    icon: "/sell/book.png",
+    icon: "/Sell/book.png",
     href: "#",
   },
   {
     name: "Spot",
     description: "have lots of categories of sport",
-    icon: "/sell/sport.png",
+    icon: "/Sell/sport.png",
     href: "#",
   },
   {
     name: "Furniture",
     description: "Home service",
-    icon: "/sell/furniture.png",
+    icon: "/Sell/furniture.png",
     href: "#",
   },
 ];
