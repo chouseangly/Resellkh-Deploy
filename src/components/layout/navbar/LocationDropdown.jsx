@@ -48,7 +48,7 @@ export default function LocationDropdown() {
           <path d="M10.1521 22.5561C3.90887 13.5052 2.75 12.5763 2.75 9.25C2.75 4.69364 6.44364 1 11 1C15.5564 1 19.25 4.69364 19.25 9.25C19.25 12.5763 18.0911 13.5052 11.8479 22.5561C11.4382 23.148 10.5618 23.1479 10.1521 22.5561ZM11 12.6875C12.8985 12.6875 14.4375 11.1485 14.4375 9.25C14.4375 7.35151 12.8985 5.8125 11 5.8125C9.10151 5.8125 7.5625 7.35151 7.5625 9.25C7.5625 11.1485 9.10151 12.6875 11 12.6875Z" fill="#EBE6E8" stroke="black" strokeWidth="1.5" />
         </svg>
 
-        <span className="text-sm text-gray-700">All of cambodia</span>
+        <span className="text-sm text-gray-700">Listing near me</span>
       </div>
 
       {/* Dropdown */}
@@ -69,7 +69,7 @@ export default function LocationDropdown() {
 
             Listing near me
           </li>
-          <li
+          {/* <li
             className="flex items-center gap-2 px-4 py-3 hover:bg-[#f2edef] cursor-default"
           >
             <svg width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -77,7 +77,7 @@ export default function LocationDropdown() {
             </svg>
 
             All of Cambodia
-          </li>
+          </li> */}
         </ul>
       )}
     </div>
