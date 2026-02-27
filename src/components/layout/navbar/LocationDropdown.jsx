@@ -91,26 +91,24 @@
 
 import { useRouter } from 'next/navigation';
 
-export default function LocationButton() {
+export default function ListingNearMeButton() {
   const router = useRouter();
 
   const handleLocationClick = () => {
-    if (!navigator.geolocation) {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          router.push(`/listing-near-me?lat=${latitude}&lng=${longitude}`);
+        },
+        (error) => {
+          alert('Location access denied. Please allow location permission.');
+          console.error(error);
+        }
+      );
+    } else {
       alert('Geolocation is not supported by your browser.');
-      return;
     }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-
-        router.push(`/listing-near-me?lat=${latitude}&lng=${longitude}`);
-      },
-      (error) => {
-        alert('Location access denied. Please allow location permission.');
-        console.error(error);
-      }
-    );
   };
 
   return (
@@ -138,3 +136,4 @@ export default function LocationButton() {
     </div>
   );
 }
+
