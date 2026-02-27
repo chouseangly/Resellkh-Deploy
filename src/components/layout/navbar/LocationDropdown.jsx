@@ -68,8 +68,8 @@ export default function LocationDropdown() {
             </svg>
 
             Listing near me
-          {/* </li>
-             <li
+         </li>
+             {/* <li
             className="flex items-center gap-2 px-4 py-3 hover:bg-[#f2edef] cursor-default"
           >
             <svg width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -77,7 +77,7 @@ export default function LocationDropdown() {
             </svg>
 
             All of Cambodia
-          </li>  */}
+          </li>   */}
         </ul>
       )}
     </div>
